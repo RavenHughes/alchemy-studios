@@ -454,7 +454,8 @@ section>.in{position:relative;z-index:1}
     var im=f.querySelector('img');im.style.clipPath='polygon('+inset(outer,w,h,9).map(function(p){return (p[0]-9).toFixed(1)+'px '+(p[1]-9).toFixed(1)+'px'}).join(',')+')';}
   function frameAll(){[].forEach.call(grid.children,function(f,i){if(!f.hidden)frame(f,i)})}
   if('ResizeObserver' in window){var ro=new ResizeObserver(function(es){es.forEach(function(e){frame(e.target,[].indexOf.call(grid.children,e.target))})});[].forEach.call(grid.children,function(f){ro.observe(f)})}
-  else{addEventListener('resize',frameAll);addEventListener('load',frameAll)}
+  else{addEventListener('resize',frameAll)}
+  addEventListener('load',frameAll);frameAll();[].forEach.call(grid.querySelectorAll('img'),function(im){im.addEventListener('load',function(){var f=im.parentNode;frame(f,[].indexOf.call(grid.children,f))})});
   var bs=[].slice.call(document.querySelectorAll('.filters button'));
   bs.forEach(function(b){b.onclick=function(){bs.forEach(function(x){x.setAttribute('aria-pressed',x===b)});[].forEach.call(grid.children,function(f){f.hidden=!(b.dataset.f==='all'||f.dataset.f===b.dataset.f)})}});
   var lb=document.getElementById('lb'),li=document.getElementById('lbI'),lc=document.getElementById('lbC'),last=null;
