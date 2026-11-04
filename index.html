@@ -203,8 +203,8 @@ section>.in{position:relative;z-index:1}
       <div class="split">
         <h2>Built for the places people remember</h2>
         <div>
-          <p>For nearly four decades our team — first as DesignWerx, Inc., now as Alchemy Studios — has been trusted by some of the most-visited theme parks in the country to build special effects, themed props, fabrication and branding. That work was done for hire and under confidentiality agreements, so it stays with the parks. What we carry from it is the discipline of building things that survive millions of guests.</p>
-          <p class="mist">Clients outside the parks have included ConAgra Foods (Slim Jim), Samsung, Gatorade, Jose Cuervo, Breitling, Daytona International Speedway, Fair Oaks Farms, Leon Air, Loveland Laser Tag, Kemperle of Florida and GT Marine.</p>
+          <p>For nearly four decades our team — first as DesignWerx, Inc. and Backstage Technologies, now as Alchemy Studios — has built special effects, themed props, fabrication and branding for some of the most-visited theme parks in the world, including Universal Orlando, Universal Studios Japan, SeaWorld and Dollywood. For The Wizarding World of Harry Potter we sculpted and aged Bludger props and engineered the animated Chocolate Frog box, and for Universal Orlando we built water and fog effects.</p>
+          <p class="mist">Other clients have included ConAgra Foods (Slim Jim), Samsung, Gatorade, Jose Cuervo, Breitling, Daytona International Speedway, Fair Oaks Farms, Leon Air, Loveland Laser Tag, Kemperle of Florida and GT Marine.</p>
           <p class="mist">The same shop has built climbing walls for national sporting events, branded towers and stages for motorsports, and promotional structures for global brands — and today writes the software behind payment platforms and a full virtual world in Unreal Engine.</p>
         </div>
       </div>
@@ -258,6 +258,7 @@ section>.in{position:relative;z-index:1}
       <h2>Selected work</h2>
       <div class="filters" role="group" aria-label="Filter work">
         <button type="button" data-f="all" aria-pressed="true">All</button>
+        <button type="button" data-f="park" aria-pressed="false">Theme parks</button>
         <button type="button" data-f="build" aria-pressed="false">Themed builds</button>
         <button type="button" data-f="fleet" aria-pressed="false">Fleet graphics</button>
         <button type="button" data-f="marine" aria-pressed="false">Marine and motorsports</button>
@@ -265,7 +266,6 @@ section>.in{position:relative;z-index:1}
         <button type="button" data-f="make" aria-pressed="false">Props and prototypes</button>
       </div>
       <div class="grid" id="grid"></div>
-      <p class="note">Our theme-park work isn't shown here. It was created for hire and remains confidential to the parks.</p>
     </div>
   </section>
 
@@ -392,8 +392,17 @@ section>.in{position:relative;z-index:1}
 
   /* ---------- work ---------- */
   var W=[
+    ['frogbox-lit','park','Animated Chocolate Frog box for The Wizarding World of Harry Potter, finished and lit, 2013',1600,1195],
+    ['bludgers-pair','park','Bludger props for The Wizarding World of Harry Potter, sculpted, cast and aged',1600,1195],
+    ['frogbox-mechanism','park','The Chocolate Frog box mechanism on its gold-edged steel base',900,1600],
+    ['chocolate-frog','park','The Chocolate Frog, sculpted for the animated box',1600,1195],
+    ['big-bertha','park','Big Bertha fireworks-rocket graphics for Dollywood, 2014',717,924],
+    ['frogbox-airbrush','park','Airbrushing the Chocolate Frog box lid',1600,1195],
+    ['bludger-texture','park','Bludger surface detail: hammered texture and rust patina',1195,1600],
+    ['frogbox-gold','park','Hammered gold panels for the Chocolate Frog box',1600,1195],
+    ['frogbox-finished','park','Chocolate Frog box, finished, ahead of review by Universal Studios Japan',1600,1195],
+    ['bludger-hand','park','A finished Bludger, to scale',1600,1195],
     ['slimjim-daytona','build','Slim Jim tower, trailer and display stage for ConAgra Foods at the Daytona 500',1300,1682],
-    ['acguys-trailer','fleet','Service trailer wrap for AC Guys',1800,1350],
     ['mall-gears','space','Clockwork gear installation for a retail center',1800,1350],
     ['samsung-climbing','build','Samsung climbing walls for the X Games in Los Angeles',1300,1682],
     ['race-livery','marine','Race car livery for Hammerbeck Racing',1800,1350],
@@ -406,7 +415,6 @@ section>.in{position:relative;z-index:1}
     ['hangar-compass','space','34-foot steel and epoxy compass rose for the Leon Air hangar, Ocala, Florida',1300,1682],
     ['kemperle-install','fleet','Fleet graphics installation for Kemperle of Florida',1800,1344],
     ['egyptian-rockwall','build','27-foot Egyptian climbing wall relief, after Pharaoh Khufu\'s tomb, for Loveland Laser Tag, Colorado',1300,1682],
-    ['bellomo-sign-install','space','Dimensional letters for Bellomo Chiropractic',1800,1350],
     ['jetski-wrap','marine','Personal watercraft graphics',1706,960],
     ['zipline-towers','build','Twin zipline towers built and branded for the Jose Cuervo Games, 2010',1300,1682],
     ['sphere-prop','make','Finished sphere prop',1800,1350],
@@ -424,7 +432,6 @@ section>.in{position:relative;z-index:1}
     ['residential-rockwall','build','Custom residential rock wall, handholds molded and installed',1300,1682],
     ['custom-wheels','make','Custom wheel finishing',1800,1350],
     ['rockwall-lookout','build','Lookout Mountain modular climbing wall',1300,1682],
-    ['bellomo-building','space','Bellomo Chiropractic building signage',1800,1350]
   ];
   var grid=document.getElementById('grid');
   W.forEach(function(w){var f=document.createElement('figure');f.dataset.f=w[1];f.tabIndex=0;f.setAttribute('role','button');f.setAttribute('aria-label',w[2]+', view full size');
