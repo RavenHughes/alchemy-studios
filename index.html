@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alchemy Studios, LLC — Prototyping, design, development and special effects</title>
+<meta name="description" content="Alchemy Studios, LLC is an Orlando, Florida studio for prototyping, special effects, props, themed fabrication, casting and molding, branding, fleet graphics, software and virtual worlds. Florida LLC, document no. L15000160768.">
+<link rel="icon" href="assets/brand/favicon.png">
+<meta property="og:title" content="Alchemy Studios, LLC">
+<meta property="og:description" content="Prototyping, design, development and special effects. Developer of The Realm®.">
+<meta property="og:image" content="assets/work/mall-gears.webp">
+<meta name="theme-color" content="#1B1934">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"Alchemy Studios, LLC","legalName":"ALCHEMY STUDIOS LLC","foundingDate":"2015-09-22","address":{"@type":"PostalAddress","addressLocality":"Orlando","addressRegion":"FL","addressCountry":"US"},"parentOrganization":{"@type":"Organization","name":"ZenChip PRIME Corp."},"founder":{"@type":"Person","name":"J. Daniel Hughes"},"identifier":"Florida Division of Corporations document no. L15000160768","logo":"assets/brand/alchemy-sigil.webp"}
+</script>
+<style>
+:root{
+  --panel:#1B1934;      /* the indigo slab everything sits on */
+  --panel2:#232045;     /* raised areas inside it */
+  --violet:#8B6CFF;     /* bokeh and plasma */
+  --cobalt:#2B3BEA;     /* the A */
+  --cyan:#7FD3FF;       /* hot core of the light */
+  --brass:#D9A441;      /* the A's rim — used sparingly */
+  --ink:#F1EEFA;        /* text */
+  --mist:#A9A4C9;       /* secondary text */
+  --hair:rgba(241,238,250,.13);
+  --f:'Jost',Futura,'Century Gothic',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:#2a1f5e}
+body{font:300 18px/1.7 var(--f);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+img{display:block;max-width:100%}
+a{color:inherit}
+:focus-visible{outline:1px solid var(--cyan);outline-offset:4px}
+
+/* the world behind the panel: drifting bokeh */
+#bokeh{position:fixed;inset:0;z-index:0;width:100%;height:100%}
+.sheet{position:relative;z-index:1;width:min(1320px,100% - 56px);margin:28px auto 40px;background:var(--panel);border-radius:18px;box-shadow:0 40px 120px rgba(10,6,40,.6),0 0 0 1px rgba(255,255,255,.05);overflow:hidden}
+@media (max-width:700px){.sheet{width:calc(100% - 20px);margin:10px auto;border-radius:14px}}
+
+/* the thin, wide voice */
+.wide{font-weight:200;text-transform:uppercase;letter-spacing:.42em}
+h2{font-weight:200;font-size:clamp(26px,3.2vw,44px);letter-spacing:.32em;text-transform:uppercase;line-height:1.25}
+h3{font-weight:400;font-size:19px;letter-spacing:.06em}
+p{max-width:62ch}
+.mist{color:var(--mist)}
+.in{padding-inline:clamp(22px,5vw,72px)}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px clamp(22px,5vw,72px)}
+.bar .home{display:flex;align-items:center;gap:14px;text-decoration:none;font-size:13px}
+.bar .home img{width:26px;height:auto}
+.bar nav{display:flex;gap:34px;font-size:12px}
+.bar nav a{text-decoration:none;color:var(--mist);transition:color .2s}
+.bar nav a:hover{color:var(--ink)}
+@media (max-width:900px){.bar nav{display:none}}
+
+/* hero: the circle forms, light pours into the name */
+.hero{position:relative;height:min(78vh,720px);min-height:480px}
+#forge{position:absolute;inset:0;width:100%;height:100%}
+.sigil{position:absolute;left:var(--cx,30%);top:50%;width:var(--cs,300px);transform:translate(-50%,-50%) scale(.82);opacity:0;transition:opacity 1.6s ease,transform 2.4s cubic-bezier(.2,.7,.2,1);pointer-events:none;filter:drop-shadow(0 0 30px rgba(43,59,234,.55))}
+.hero.lit .sigil{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.name{position:absolute;right:clamp(36px,8vw,120px);top:50%;transform:translateY(-50%);width:min(40%,520px);opacity:0;transition:opacity 2s ease 0s}
+.hero.named .name{opacity:1}
+.name img{width:100%;height:auto;filter:drop-shadow(0 0 14px rgba(139,108,255,.6))}
+.name p{margin-top:28px;font-size:clamp(14px,1.1vw,16px);color:var(--mist);letter-spacing:.06em;max-width:40ch;opacity:0;transition:opacity 1.6s ease .9s}
+.hero.named .name p{opacity:1}
+.rail{position:absolute;right:clamp(14px,2.4vw,34px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:22px}
+.rail a{display:block;width:18px;height:18px;color:var(--mist)}
+.rail a:hover{color:var(--ink)}
+.rail svg{width:18px;height:18px}
+.legal{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:10.5px;color:var(--mist)}
+@media (max-width:820px){
+  .hero{height:auto;min-height:0;padding:0 0 60px}
+  #forge{position:relative;height:300px}
+  .sigil{--cx:50%;top:150px;width:200px}
+  .name{position:relative;right:auto;top:auto;transform:none;width:auto;margin:10px 26px 0}
+  .rail,.legal{display:none}
+}
+
+/* sections */
+section{padding:clamp(70px,9vw,120px) 0;border-top:1px solid var(--hair)}
+.split{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(30px,6vw,90px);align-items:start}
+.split p+p{margin-top:18px}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+.figs{display:grid;grid-template-columns:repeat(3,1fr);margin-top:56px;border-top:1px solid var(--hair)}
+.figs div{padding:26px 22px 0 0}
+.figs div+div{padding-left:22px;border-left:1px solid var(--hair)}
+.figs b{display:block;font-weight:200;font-size:clamp(40px,4.4vw,60px);line-height:1;letter-spacing:.04em}
+.figs span{display:block;margin-top:12px;font-size:15px;color:var(--mist);line-height:1.5}
+@media (max-width:700px){.figs{grid-template-columns:1fr}.figs div+div{border-left:0;padding-left:0;border-top:1px solid var(--hair);margin-top:22px}}
+
+/* disciplines */
+.disc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:50px}
+.disc>div{padding:0 32px 0 0}
+.disc>div+div{padding-left:32px;border-left:1px solid var(--hair)}
+.disc h3{font-weight:200;font-size:30px;letter-spacing:.34em;text-transform:uppercase}
+.disc .sub{color:var(--mist);font-size:15px;margin-top:6px}
+.disc dt{font-weight:400;font-size:17px;margin-top:22px;letter-spacing:.02em}
+.disc dd{font-size:15.5px;color:var(--mist);line-height:1.55;margin-top:3px}
+@media (max-width:900px){.disc{grid-template-columns:1fr}.disc>div+div{border-left:0;padding-left:0;border-top:1px solid var(--hair);margin-top:30px;padding-top:24px}}
+
+/* work */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
+.filters button{font:300 12px var(--f);letter-spacing:.24em;text-transform:uppercase;color:var(--mist);background:transparent;border:1px solid var(--hair);border-radius:999px;padding:10px 18px;cursor:pointer;transition:.2s}
+.filters button:hover{color:var(--ink);border-color:rgba(241,238,250,.35)}
+.filters button[aria-pressed="true"]{color:var(--panel);background:var(--ink);border-color:var(--ink)}
+.grid{columns:3 280px;column-gap:16px;margin-top:30px}
+.grid figure{break-inside:avoid;margin:0 0 16px;position:relative;cursor:zoom-in;border-radius:10px;overflow:hidden;background:#110f24}
+.grid figure[hidden]{display:none}
+.grid img{width:100%;height:auto}
+.grid figcaption{position:absolute;inset:auto 0 0 0;padding:34px 16px 13px;font-size:14px;line-height:1.4;letter-spacing:.02em;background:linear-gradient(transparent,rgba(17,15,36,.95));opacity:0;transition:opacity .25s}
+.grid figure:hover figcaption,.grid figure:focus-visible figcaption{opacity:1}
+@media (hover:none){.grid figcaption{opacity:1}}
+.note{font-size:14.5px;color:var(--mist);margin-top:26px}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(10,8,26,.94);display:grid;place-items:center;padding:20px;cursor:zoom-out}
+.lb[hidden]{display:none}
+.lb img{max-width:100%;max-height:calc(100vh - 90px);width:auto;height:auto;object-fit:contain;border-radius:8px}
+.lb p{text-align:center;color:var(--mist);margin:12px auto 0;font-size:15px}
+
+/* ventures */
+.vent{margin-top:46px}
+.v{display:grid;grid-template-columns:260px 1fr;gap:40px;align-items:center;padding:34px 0;border-top:1px solid var(--hair)}
+.v .mk{display:flex;align-items:center;height:80px}
+.v .mk img{max-height:80px;width:auto;max-width:240px}
+.v .role{font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--violet)}
+.v h3{margin-top:6px}
+.v p{color:var(--mist);margin-top:8px;font-size:16.5px}
+@media (max-width:820px){.v{grid-template-columns:1fr;gap:14px}}
+
+/* record */
+.cert{border:1px solid rgba(217,164,65,.55);border-radius:14px;padding:clamp(24px,3.4vw,44px);position:relative;background:radial-gradient(120% 90% at 100% 0%,rgba(139,108,255,.14),transparent 60%),var(--panel2)}
+.cert img.seal{position:absolute;right:26px;top:22px;width:70px;height:auto}
+.cert dl{display:grid;grid-template-columns:auto 1fr;gap:15px 30px;margin-top:4px;padding-right:80px}
+.cert dt{font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mist);padding-top:5px}
+.cert dd{font-size:18px;font-weight:400}
+.cert dd.num{letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.cert .verify{margin-top:28px;font-size:15px;color:var(--mist)}
+@media (max-width:700px){.cert dl{grid-template-columns:1fr;gap:2px;padding-right:0}.cert dd{margin-bottom:12px}.cert img.seal{position:static;margin-bottom:16px}}
+
+/* contact */
+.contact h2 a{text-decoration:none;border-bottom:1px solid var(--violet)}
+.contact h2{letter-spacing:.18em;text-transform:none;font-size:clamp(22px,2.6vw,36px)}
+footer{padding:34px 0 40px;border-top:1px solid var(--hair);font-size:12px;letter-spacing:.14em;color:var(--mist)}
+footer .in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* the alchemist's circle inside a thin guilloche ring, engraved faintly into the panel */
+section{position:relative}
+section>.in{position:relative;z-index:1}
+.mark{position:absolute;z-index:0;pointer-events:none;aspect-ratio:1;opacity:.075}
+.mark img{position:absolute;inset:0;width:100%;height:100%}
+.mark .ring{animation:spin 300s linear infinite}
+.mark .circ{inset:7%;width:86%;height:86%;animation:spin 420s linear infinite reverse}
+.mark.m1{width:980px;right:-330px;top:-150px}
+.mark.m2{width:760px;left:-260px;top:50%;transform:translateY(-50%);opacity:.06}
+.mark.m3{width:640px;right:-200px;bottom:-260px;opacity:.06}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:700px){.mark.m1{width:620px;right:-300px;top:-60px}.mark.m2,.mark.m3{display:none}}
+@media (prefers-reduced-motion:reduce){.mark img{animation:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sigil,.name,.name p{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="bokeh" aria-hidden="true"></canvas>
+
+<div class="sheet" id="top">
+  <header class="bar">
+    <a class="home wide" href="#top" aria-label="Alchemy Studios, home"><img src="assets/brand/alchemy-sigil.webp" alt="">Alchemy Studios</a>
+    <nav class="wide" aria-label="Sections"><a href="#studio">Studio</a><a href="#disciplines">Disciplines</a><a href="#work">Work</a><a href="#ventures">Ventures</a><a href="#record">Record</a><a href="#contact">Contact</a></nav>
+  </header>
+
+  <div class="hero" id="hero">
+    <canvas id="forge" aria-hidden="true"></canvas>
+    <img class="sigil" id="sigil" src="assets/brand/alchemy-sigil.webp" alt="">
+    <div class="name">
+      <h1><img src="assets/brand/alchemy-wordmark-thin.webp" alt="Alchemy Studios"></h1>
+      <p>Prototyping, design, development and special effects. Ideas in, objects out.</p>
+    </div>
+    <div class="rail" aria-label="Contact">
+      <a href="mailto:info@alchemystudiosorlando.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg></a>
+      <a href="#record" aria-label="Company record"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M7 3.5h7l4 4V20.5H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/></svg></a>
+      <a href="#work" aria-label="Work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg></a>
+    </div>
+    <div class="legal wide">Alchemy Studios, LLC &nbsp;|&nbsp; Florida LLC No. L15000160768</div>
+  </div>
+
+  <section id="studio">
+    <div class="mark m1" aria-hidden="true"><img class="ring" src="assets/brand/guilloche-ring.svg" alt=""><img class="circ" src="assets/brand/alchemy-circle.webp" alt=""></div>
+    <div class="in">
+      <div class="split">
+        <h2>Built for the places people remember</h2>
+        <div>
+          <p>For nearly four decades our team — first as DesignWerx, Inc., now as Alchemy Studios — has been trusted by some of the most-visited theme parks in the country to build special effects, themed props, fabrication and branding. That work was done for hire and under confidentiality agreements, so it stays with the parks. What we carry from it is the discipline of building things that survive millions of guests.</p>
+          <p class="mist">Clients outside the parks have included ConAgra Foods (Slim Jim), Samsung, Gatorade, Jose Cuervo, Breitling, Daytona International Speedway, Fair Oaks, Loveland Laser Tag, Kemperle of Florida and GT Marine.</p>
+          <p class="mist">The same shop has built climbing walls for national sporting events, branded towers and stages for motorsports, and promotional structures for global brands — and today writes the software behind payment platforms and a full virtual world in Unreal Engine.</p>
+        </div>
+      </div>
+      <div class="figs">
+        <div><b>37+ yrs</b><span>as a preferred vendor to major theme parks in Florida and Tennessee</span></div>
+        <div><b>3,000+</b><span>trucks and vehicles wrapped by our installers</span></div>
+        <div><b>2015</b><span>Alchemy Studios, LLC organized in Florida, continuing the work of DesignWerx, Inc.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="disciplines">
+    <div class="in">
+      <h2>Make · Design · Develop</h2>
+      <p class="mist" style="margin-top:18px">Three workshops, one team. Most projects move through all three.</p>
+      <div class="disc">
+        <div>
+          <h3>Make</h3><p class="sub">Physical things, built to last</p>
+          <dl>
+            <dt>Prototyping</dt><dd>Working models and rapid prototypes, from first article to pre-production.</dd>
+            <dt>Special effects</dt><dd>Show effects, mechanisms and illusions for attractions, stages and events.</dd>
+            <dt>Props and themed fabrication</dt><dd>Hero props, climbing walls, set pieces and themed environments in foam, resin, steel and wood.</dd>
+            <dt>Casting and molding</dt><dd>Silicone and rigid molds; resin, plaster and urethane castings in short runs.</dd>
+            <dt>Laser cutting and engraving</dt><dd>Precision cutting and etching with our sister shop, Hughes Laser Lab.</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>Design</h3><p class="sub">How it looks, how it works</p>
+          <dl>
+            <dt>Product and industrial design</dt><dd>3D mechanical design, tooling and products ready to manufacture.</dd>
+            <dt>3D modeling and sculpting</dt><dd>Digital sculpts, characters and models, with an in-house coloring team.</dd>
+            <dt>Branding and identity</dt><dd>Logos, brand systems, packaging and card design.</dd>
+            <dt>Fleet and vehicle graphics</dt><dd>Wraps for trucks, vans, trailers, race cars and boats, designed and installed.</dd>
+            <dt>Signage and environments</dt><dd>Dimensional letters, floor graphics and branded spaces.</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>Develop</h3><p class="sub">The software behind it</p>
+          <dl>
+            <dt>Platforms and web</dt><dd>Cloud platforms, payment and card systems, websites and dashboards.</dd>
+            <dt>Virtual worlds</dt><dd>Multiplayer worlds in Unreal Engine for VR and desktop.</dd>
+            <dt>Voice overs</dt><dd>Narration, character voices and voice guides for products, films and worlds.</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="in">
+      <h2>Selected work</h2>
+      <div class="filters" role="group" aria-label="Filter work">
+        <button type="button" data-f="all" aria-pressed="true">All</button>
+        <button type="button" data-f="build" aria-pressed="false">Themed builds</button>
+        <button type="button" data-f="fleet" aria-pressed="false">Fleet graphics</button>
+        <button type="button" data-f="marine" aria-pressed="false">Marine and motorsports</button>
+        <button type="button" data-f="space" aria-pressed="false">Signage and spaces</button>
+        <button type="button" data-f="make" aria-pressed="false">Props and prototypes</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <p class="note">Our theme-park work isn't shown here. It was created for hire and remains confidential to the parks.</p>
+    </div>
+  </section>
+
+  <section id="ventures">
+    <div class="in">
+      <h2>Ventures we build</h2>
+      <p class="mist" style="margin-top:18px">Alchemy Studios develops its own platforms alongside client work.</p>
+      <div class="vent">
+        <div class="v"><div class="mk"><img src="assets/brand/realm-wordmark.png" alt="The Realm" loading="lazy"></div><div><span class="role">Developer</span><h3>The Realm®</h3><p>A persistent multiplayer world in Unreal Engine for VR and desktop, with verified citizens, nine islands, Land Title collectibles and virtual learning.</p></div></div>
+        <div class="v"><div class="mk"><img src="assets/brand/apex-logo.webp" alt="Apex Passport Card" loading="lazy"></div><div><span class="role">Sister company</span><h3>Apex NEO Card</h3><p>A patented polymorphic card platform, metal and virtual, that carries one verified member identity. Card art, platform design and integration by our team.</p></div></div>
+        <div class="v"><div class="mk wide" style="font-size:20px">Graffix Tools</div><div><span class="role">Product line</span><h3>Graffix Tools</h3><p>Installation tools for the sign and vehicle-wrap trade, including the Rivet Sealer 3000 and SE360 — designed and built by an installer, for installers.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="record">
+    <div class="mark m2" aria-hidden="true"><img class="ring" src="assets/brand/guilloche-ring.svg" alt=""><img class="circ" src="assets/brand/alchemy-circle.webp" alt=""></div>
+    <div class="in split">
+      <div>
+        <h2>Company record</h2>
+        <p class="mist" style="margin-top:18px">For partners, lenders and researchers verifying who we are. These details match our filings with the Florida Department of State.</p>
+      </div>
+      <div class="cert">
+        <img class="seal" src="assets/brand/alchemy-sigil.webp" alt="">
+        <dl>
+          <dt>Legal name</dt><dd>Alchemy Studios, LLC</dd>
+          <dt>Entity type</dt><dd>Florida limited liability company</dd>
+          <dt>Document no.</dt><dd class="num">L15000160768</dd>
+          <dt>Organized</dt><dd>September 22, 2015</dd>
+          <dt>Parent</dt><dd>Wholly owned by ZenChip PRIME Corp.</dd>
+          <dt>Principal</dt><dd>J. Daniel Hughes</dd>
+          <dt>Predecessor</dt><dd>DesignWerx, Inc.</dd>
+          <dt>Location</dt><dd>Orlando, Florida</dd>
+        </dl>
+        <p class="verify">Verify on the <a href="https://search.sunbiz.org/Inquiry/CorporationSearch/ByDocumentNumber" rel="noopener">Florida Division of Corporations</a> site by searching document number L15000160768.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="mark m3" aria-hidden="true"><img class="ring" src="assets/brand/guilloche-ring.svg" alt=""><img class="circ" src="assets/brand/alchemy-circle.webp" alt=""></div>
+    <div class="in">
+      <h2>Start a project: <a href="mailto:info@alchemystudiosorlando.com">info@alchemystudiosorlando.com</a></h2>
+      <p class="mist" style="margin-top:18px">Tell us what you want to make, its size and your deadline. We reply within two business days.</p>
+    </div>
+  </section>
+
+  <footer><div class="in"><span>© 2026 Alchemy Studios, LLC &nbsp;|&nbsp; A ZenChip PRIME company</span><span>The Realm® is a registered trademark. Client marks belong to their owners.</span></div></footer>
+</div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-label="Picture, full size"><div><img id="lbI" alt=""><p id="lbC"></p></div></div>
+
+<script>
+(function(){
+  'use strict';
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches, DPR=Math.min(window.devicePixelRatio||1,1.6);
+
+  /* ---------- background: soft violet and cobalt bokeh drifting behind the panel ---------- */
+  (function(){
+    var c=document.getElementById('bokeh'),g=c.getContext('2d'),W,H,dots=[],stars=[];
+    var COL=[[139,108,255],[110,90,240],[43,59,234],[200,180,255],[255,255,255],[127,211,255]];
+    function size(){W=c.width=innerWidth*DPR;H=c.height=innerHeight*DPR;dots=[];stars=[];
+      var n=Math.round(Math.min(26,innerWidth/55));
+      for(var i=0;i<n;i++){var col=COL[i%COL.length];dots.push({x:Math.random()*W,y:Math.random()*H,r:(40+Math.random()*170)*DPR,c:col,a:.12+Math.random()*.32,vx:(Math.random()-.5)*.12*DPR,vy:(Math.random()-.5)*.1*DPR,p:Math.random()*6.3})}
+      for(i=0;i<14;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:(2+Math.random()*4)*DPR,p:Math.random()*6.3})}
+    function frame(t){
+      var bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#3b2a8a');bg.addColorStop(.5,'#5a3fb5');bg.addColorStop(1,'#2b2470');g.fillStyle=bg;g.fillRect(0,0,W,H);
+      g.globalCompositeOperation='lighter';
+      dots.forEach(function(d){if(!reduce){d.x+=d.vx;d.y+=d.vy;if(d.x<-d.r)d.x=W+d.r;if(d.x>W+d.r)d.x=-d.r;if(d.y<-d.r)d.y=H+d.r;if(d.y>H+d.r)d.y=-d.r}
+        var a=d.a*(.75+.25*Math.sin(t/2600+d.p)),gr=g.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r);
+        gr.addColorStop(0,'rgba('+d.c+','+a+')');gr.addColorStop(.55,'rgba('+d.c+','+a*.55+')');gr.addColorStop(1,'rgba('+d.c+',0)');g.fillStyle=gr;g.beginPath();g.arc(d.x,d.y,d.r,0,6.283);g.fill()});
+      stars.forEach(function(s){var k=.35+.65*Math.abs(Math.sin(t/1500+s.p)),L=s.s*4*k;g.strokeStyle='rgba(255,255,255,'+(.55*k)+')';g.lineWidth=1*DPR;
+        g.beginPath();g.moveTo(s.x-L,s.y);g.lineTo(s.x+L,s.y);g.moveTo(s.x,s.y-L);g.lineTo(s.x,s.y+L);g.stroke();g.fillStyle='rgba(255,255,255,'+k+')';g.beginPath();g.arc(s.x,s.y,s.s*.45,0,6.283);g.fill()});
+      g.globalCompositeOperation='source-over';
+      if(!reduce)requestAnimationFrame(frame)}
+    size();addEventListener('resize',size);requestAnimationFrame(frame);
+  })();
+
+  /* ---------- hero: the transmutation circle forms, then light streams into the name ---------- */
+  (function(){
+    var hero=document.getElementById('hero'),c=document.getElementById('forge'),g=c.getContext('2d'),sig=document.getElementById('sigil');
+    var W,H,cx,cy,R,mobile,parts=[],t0=null,rot=0,tx=0,ty=0,nm=document.querySelector('.name img');
+    function size(){var r=c.getBoundingClientRect();W=c.width=r.width*DPR;H=c.height=r.height*DPR;mobile=innerWidth<=820;
+      cx=W*(mobile?.5:.25);cy=H*.5;R=Math.min(H*(mobile?.4:.33),W*(mobile?.36:.19));
+      hero.style.setProperty('--cx',(mobile?50:25)+'%');var b=nm.getBoundingClientRect();tx=(b.left-r.left+b.width*.08)*DPR;ty=(b.top-r.top+b.height*.4)*DPR;if(!b.width){tx=W*.62;ty=cy*.9}sig.style.width=(R*1.02/DPR)+'px'}
+    function ease(x){x=Math.max(0,Math.min(1,x));return 1-Math.pow(1-x,3)}
+    function seg(t,a,b){return ease((t-a)/(b-a))}
+    function glow(col,w,blur){g.strokeStyle=col;g.lineWidth=w*DPR;g.shadowColor=col;g.shadowBlur=blur*DPR}
+    function poly(n,r,off,p){g.beginPath();var pts=[];for(var i=0;i<=n;i++){var a=off+i*6.2832/n;pts.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r])}
+      var L=n*p,full=Math.floor(L);g.moveTo(pts[0][0],pts[0][1]);for(i=1;i<=full;i++)g.lineTo(pts[i][0],pts[i][1]);
+      if(full<n){var f=L-full,a0=pts[full],a1=pts[full+1];g.lineTo(a0[0]+(a1[0]-a0[0])*f,a0[1]+(a1[1]-a0[1])*f)}g.stroke()}
+    function draw(now){
+      if(t0===null)t0=now;var t=(now-t0)/1000;if(reduce)t=99;
+      g.clearRect(0,0,W,H);g.save();g.globalCompositeOperation='lighter';
+      rot+=reduce?0:.0009;g.translate(cx,cy);g.rotate(rot);g.translate(-cx,-cy);
+      var a1=seg(t,.2,1.8),a2=seg(t,.7,2.2),a3=seg(t,1.3,2.8),a4=seg(t,1.9,3.2),fade=t>9?Math.max(.55,1-(t-9)*.06):1;
+      /* outer and inner rings */
+      glow('rgba(139,108,255,'+.9*fade+')',1.4,18);g.beginPath();g.arc(cx,cy,R,-1.5708,-1.5708+6.2832*a1);g.stroke();
+      glow('rgba(127,211,255,'+.7*fade+')',1,12);g.beginPath();g.arc(cx,cy,R*.86,1.5708,1.5708+6.2832*a1);g.stroke();
+      glow('rgba(139,108,255,'+.5*fade+')',.8,8);g.beginPath();g.arc(cx,cy,R*.5,0,6.2832*a2);g.stroke();
+      /* the hexagram and the square: the four elements */
+      glow('rgba(127,211,255,'+.75*fade+')',1.1,14);poly(3,R*.86,-1.5708,a2);poly(3,R*.86,1.5708,a3);
+      glow('rgba(217,164,65,'+.55*fade+')',.9,10);poly(4,R*.61,.7854,a3);
+      /* nodes where the lines meet */
+      if(a4>0){for(var i=0;i<12;i++){var an=-1.5708+i*.5236,rr=i%2?R:R*.86,x=cx+Math.cos(an)*rr,y=cy+Math.sin(an)*rr,s=(i%3?2.2:3.6)*DPR*a4;
+        g.shadowColor='rgba(127,211,255,1)';g.shadowBlur=20*DPR;g.fillStyle='rgba(220,240,255,'+.95*a4*fade+')';g.beginPath();g.arc(x,y,s,0,6.283);g.fill();
+        if(i%3===0){glow('rgba(139,108,255,'+.6*a4*fade+')',.8,8);g.beginPath();g.arc(x,y,s*3.2,0,6.283);g.stroke()}}}
+      g.restore();
+      /* plasma: particles leave the right of the circle and stream into the name */
+      if(!mobile&&t>2.4){var burst=t<7?5:1.2;for(var k=0;k<burst;k++){if(Math.random()<(t<7?1:.6))parts.push({x:cx+R*.95,y:cy+(Math.random()-.5)*R*.5,vx:(1.6+Math.random()*2.6)*DPR,ph:Math.random()*6.3,amp:(6+Math.random()*26)*DPR,life:0,max:120+Math.random()*120,hue:Math.random()})}}
+      g.save();g.globalCompositeOperation='lighter';
+      for(var j=parts.length-1;j>=0;j--){var p=parts[j];p.life++;p.x+=p.vx;var k2=Math.max(0,Math.min(1,(p.x-(cx+R))/(tx-cx-R))),yy=p.y+(ty-p.y)*k2*k2+Math.sin(p.x/(60*DPR)+p.ph)*p.amp*(1-k2)*Math.min(1,p.life/40);
+        var lf=Math.min(1-p.life/p.max,(tx+W*.03-p.x)/(W*.05));if(lf<=0||p.x>W){parts.splice(j,1);continue}
+        var col=p.hue<.55?'139,108,255':(p.hue<.85?'127,211,255':'255,255,255');
+        g.fillStyle='rgba('+col+','+(.55*lf)+')';g.shadowColor='rgba('+col+',1)';g.shadowBlur=12*DPR;g.beginPath();g.arc(p.x,yy,(1+lf*1.6)*DPR,0,6.283);g.fill()}
+      g.restore();
+      if(t>2.6&&!hero.classList.contains('lit'))hero.classList.add('lit');
+      if(t>3.6&&!hero.classList.contains('named'))hero.classList.add('named');
+      if(!reduce&&!document.hidden)requestAnimationFrame(draw)}
+    size();addEventListener('resize',function(){size()});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden&&!reduce)requestAnimationFrame(draw)});
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---------- work ---------- */
+  var W=[
+    ['slimjim-daytona','build','Slim Jim tower, trailer and display stage for ConAgra Foods at the Daytona 500',1300,1682],
+    ['acguys-trailer','fleet','Service trailer wrap for AC Guys',1800,1350],
+    ['mall-gears','space','Clockwork gear installation for a retail center',1800,1350],
+    ['samsung-climbing','build','Samsung climbing walls for the X Games in Los Angeles',1300,1682],
+    ['race-livery','marine','Race car livery for Hammerbeck Racing',1800,1350],
+    ['balloon-prop','make','Hot-air balloon prop, hand-painted with netting',1200,1600],
+    ['rockwall-sierra','build','Stationary and modular rock climbing walls',1300,1682],
+    ['locksmith-van','fleet','Full van wrap for Abrakeydabra locksmiths',1800,1350],
+    ['gtmarine-boat','marine','Offshore boat wrap for GT Marine',1800,1350],
+    ['gatorade-wall','build','Gatorade bottle climbing wall for mobile trailer events',1300,1682],
+    ['sphere-molds','make','Sphere masters and molds in the shop',1800,1350],
+    ['hangar-compass','space','34-foot steel and epoxy compass floor for an aircraft hangar',1300,1682],
+    ['kemperle-install','fleet','Fleet graphics installation for Kemperle of Florida',1800,1344],
+    ['egyptian-rockwall','build','27-foot Egyptian climbing wall relief, after Pharaoh Khufu\'s tomb, for Loveland Laser Tag, Colorado',1300,1682],
+    ['bellomo-sign-install','space','Dimensional letters for Bellomo Chiropractic',1800,1350],
+    ['jetski-wrap','marine','Personal watercraft graphics',1706,960],
+    ['zipline-towers','build','Twin zipline towers built and branded for the Jose Cuervo Games, 2010',1300,1682],
+    ['sphere-prop','make','Finished sphere prop',1800,1350],
+    ['mardigras-daytona','build','Mardi Gras themed structures for Daytona International Speedway, 2016',1300,1682],
+    ['gtmarine-wrap','marine','GT Marine graphics, detail',1800,1350],
+    ['mountain-shell','build','Modular mountain shell around a zipline tower for the Road to Rio event, 2016',1300,1682],
+    ['scale-models','make','Livery prototypes on scale models',1800,1350],
+    ['millennium-wall','space','Soltime and Breitling promotional wall at Millennium Square mall',1300,1682],
+    ['gtmarine-truck','fleet','Matching truck graphics for GT Marine',1800,1350],
+    ['rockwall-alpine','build','Alpine-themed modular climbing wall',1300,1682],
+    ['chandelier-restoration','make','Antique chandelier restoration',1350,1800],
+    ['dairy-rockwall','build','Fair Oaks milk-bottle climbing wall, fabricated and wrapped for a dairy promotion',1300,1682],
+    ['mall-gears-install','space','Installing the gear installation on site',1800,1350],
+    ['race-car','marine','Race car, rear view after wrap',1800,1350],
+    ['residential-rockwall','build','Custom residential rock wall, handholds molded and installed',1300,1682],
+    ['custom-wheels','make','Custom wheel finishing',1800,1350],
+    ['rockwall-lookout','build','Lookout Mountain modular climbing wall',1300,1682],
+    ['bellomo-building','space','Bellomo Chiropractic building signage',1800,1350]
+  ];
+  var grid=document.getElementById('grid');
+  W.forEach(function(w){var f=document.createElement('figure');f.dataset.f=w[1];f.tabIndex=0;f.setAttribute('role','button');f.setAttribute('aria-label',w[2]+', view full size');
+    f.innerHTML='<img src="assets/work/'+w[0]+'.webp" alt="'+w[2]+'" loading="lazy" width="'+w[3]+'" height="'+w[4]+'"><figcaption>'+w[2]+'</figcaption>';grid.appendChild(f)});
+  var bs=[].slice.call(document.querySelectorAll('.filters button'));
+  bs.forEach(function(b){b.onclick=function(){bs.forEach(function(x){x.setAttribute('aria-pressed',x===b)});[].forEach.call(grid.children,function(f){f.hidden=!(b.dataset.f==='all'||f.dataset.f===b.dataset.f)})}});
+  var lb=document.getElementById('lb'),li=document.getElementById('lbI'),lc=document.getElementById('lbC'),last=null;
+  function open(f){last=f;var im=f.querySelector('img');li.src=im.src;li.alt=im.alt;lc.textContent=im.alt;lb.hidden=false}
+  function close(){lb.hidden=true;if(last)last.focus()}
+  grid.addEventListener('click',function(e){var f=e.target.closest('figure');if(f)open(f)});
+  grid.addEventListener('keydown',function(e){var f=e.target.closest('figure');if(f&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open(f)}});
+  lb.addEventListener('click',close);document.addEventListener('keydown',function(e){if(!lb.hidden&&e.key==='Escape')close()});
+})();
+</script>
+</body>
+</html>
