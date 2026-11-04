@@ -108,6 +108,7 @@ section{padding:clamp(70px,9vw,120px) 0;border-top:1px solid var(--hair)}
 .brands{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:18px;margin-top:34px}
 .brand{margin:0;background:#fff;border:1px solid var(--hair);padding:clamp(18px,3vw,34px);display:flex;flex-direction:column;justify-content:center;gap:16px}
 .brand img{display:block;width:100%;height:auto;object-fit:contain}
+.brand.dark{background:#07060f}.brand.dark figcaption{color:#c9c4dc}
 .brand figcaption{color:#3a3650;font-size:13px;letter-spacing:.16em;text-transform:uppercase;text-align:center}
 /* work */
 .filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px}
@@ -172,6 +173,8 @@ figure.hf img{width:100%;height:auto;display:block}
 .v{display:grid;grid-template-columns:260px 1fr;gap:40px;align-items:center;padding:34px 0;border-top:1px solid var(--hair)}
 .v .mk{display:flex;align-items:center;height:80px}
 .v .mk img{max-height:80px;width:auto;max-width:240px}
+.v .mk img.badge{max-height:150px}.v .mk:has(img.badge){height:150px}
+.lab-banner{margin:34px 0 0;border:1px solid var(--hair)}.lab-banner img{display:block;width:100%;height:auto}
 .v .role{font-size:11.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--violet)}
 .v h3{margin-top:6px}
 .v p{color:var(--mist);margin-top:8px;font-size:16.5px}
@@ -381,6 +384,7 @@ section>.in{position:relative;z-index:1}
       <p class="brand-lead">Identities built to work everywhere they land: dimensional logos, wordmarks and brand marks, carried through to signage, vehicle wraps, packaging, cards and screens.</p>
       <div class="brands">
         <figure class="brand"><img src="assets/brands/small-world.webp" alt="Small World Tours and Cruises, Inc. logo" width="1400" height="555" loading="lazy"><figcaption>Small World Tours and Cruises, Inc.</figcaption></figure>
+        <figure class="brand dark"><img src="assets/brands/hughes-laser-lab.webp" alt="Hughes Laser Lab badge" width="600" height="600" loading="lazy" style="max-width:300px;margin:0 auto"><figcaption>Hughes Laser Lab</figcaption></figure>
         <figure class="brand"><img src="assets/brands/spear-tech.webp" alt="Spear Tech logo, dimensional version" width="1400" height="602" loading="lazy"><figcaption>Spear Tech: dimensional logo</figcaption></figure>
       </div>
     </div>
@@ -391,7 +395,8 @@ section>.in{position:relative;z-index:1}
       <h2>Product lines</h2>
       <div class="vent">
         <div class="v"><div class="mk wide" style="font-size:20px">Graffix Tools</div><div><span class="role">Product line</span><h3>Graffix Tools</h3><p>Installation tools for the sign and vehicle-wrap trade, including the Rivet Sealer 3000 and SE360 — designed and built by an installer, for installers.</p></div></div>
-        <div class="v"><div class="mk wide" style="font-size:20px">Hughes Laser Lab</div><div><span class="role">Sister shop</span><h3>Hughes Laser Lab</h3><p>Laser cutting, engraving and etching, from one-off parts to production runs and laser-etched metal cards.</p></div></div>
+        <figure class="lab-banner"><img src="assets/brand/laser-lab.webp" alt="J. Daniel Hughes in the Hughes Laser Lab" width="1536" height="600" loading="lazy"></figure>
+        <div class="v"><div class="mk"><img class="badge" src="assets/brands/hughes-laser-lab.webp" alt="Hughes Laser Lab" width="600" height="600" loading="lazy"></div><div><span class="role">Sister shop</span><h3>Hughes Laser Lab</h3><p>Laser cutting, engraving and etching, from one-off parts to production runs and laser-etched metal cards.</p></div></div>
       </div>
     </div>
   </section>
@@ -524,6 +529,9 @@ section>.in{position:relative;z-index:1}
     ['frogbox-gold','park','Hammered gold panels for the Chocolate Frog box',1600,1195],
     ['frogbox-finished','park','Chocolate Frog box, finished, ahead of review by Universal Studios Japan',1600,1195],
     ['bludger-hand','park','A finished Bludger, to scale',1600,1195],
+    ['gameface-coach','fleet','Full coach wrap for the Detroit Strange pro paintball team and Gameface',1600,852],
+    ['slimjim-wrap-install','fleet','Heat-forming the Slim Jim trailer wrap for ConAgra Foods',1600,1118],
+    ['slimjim-trailer-install','fleet','Slim Jim stage trailer and giant product prop, wrapped in the shop',1600,1388],
     ['slimjim-daytona','build','Slim Jim tower, trailer and display stage for ConAgra Foods at the Daytona 500',1300,1682],
     ['mall-gears','space','Clockwork gear installation for a retail center',1800,1350],
     ['samsung-climbing','build','Samsung climbing walls for the X Games in Los Angeles',1300,1682],
@@ -558,13 +566,13 @@ section>.in{position:relative;z-index:1}
   /* The host answers too many image requests at once with 429 (Too Many Requests), so gallery photos
      load a few at a time as they come near the screen, and any refused image is retried after a pause. */
   var Q=[],busy=0,MAX=3;
-  function pump(){while(busy<MAX&&Q.length){var im=Q.shift();busy++;(function(im){var done=function(){busy--;pump()};
+  function pump(){while(busy<MAX&&Q.length){var im=Q.shift();busy++;(function(im){var fin=false,done=function(){if(fin)return;fin=true;clearTimeout(t);busy--;pump()},t=setTimeout(done,12000);
     im.addEventListener('load',done,{once:true});im.addEventListener('error',done,{once:true});im.src=im.dataset.src})(im)}}
   function want(im){if(im.dataset.q)return;im.dataset.q=1;Q.push(im);pump()}
   window.alchemyWant=want;
   var grid=document.getElementById('grid');
   W.forEach(function(w){var f=document.createElement('figure');f.dataset.f=w[1];f.tabIndex=0;f.setAttribute('role','button');f.setAttribute('aria-label',w[2]+', view full size');
-    f.innerHTML='<img data-src="assets/work/'+w[0]+'.webp" alt="'+w[2]+'" loading="lazy" width="'+w[3]+'" height="'+w[4]+'"><figcaption>'+w[2]+'</figcaption>';grid.appendChild(f)});
+    f.innerHTML='<img data-src="assets/work/'+w[0]+'.webp" alt="'+w[2]+'" decoding="async" width="'+w[3]+'" height="'+w[4]+'"><figcaption>'+w[2]+'</figcaption>';grid.appendChild(f)});
 
   /* draw each photo's HUD frame at its real pixel size, so lines stay hairline-thin and the photo is never stretched */
   var NS='http://www.w3.org/2000/svg';
