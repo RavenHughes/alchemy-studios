@@ -8,7 +8,6 @@
   function fiber(){
     var c=document.createElement('canvas');c.id='obs-fiber';c.setAttribute('aria-hidden','true');document.body.insertBefore(c,document.body.firstChild);
     var g=c.getContext('2d'),DPR=Math.min(window.devicePixelRatio||1,1.5),W,H,last=0;
-    function unused(any){var r=Math.random(),big=r>.9;return{x:Math.random()*W,y:any?Math.random()*H:H+10,r:big?1.6+Math.random()*1.4:.5+Math.random()*.9,v:.12+Math.random()*.45,w:.2+Math.random()*.6,p:Math.random()*6.3,a:big?.55+Math.random()*.35:.18+Math.random()*.4,c:Math.random()<.55?'127,211,255':Math.random()<.6?'139,108,255':'217,164,65'}}
     function size(){W=c.width=innerWidth*DPR;H=c.height=innerHeight*DPR}size();addEventListener('resize',size);
     function draw(now){
       if(!reduce)requestAnimationFrame(draw);if(now-last<33)return;last=now;
