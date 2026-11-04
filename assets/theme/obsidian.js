@@ -19,7 +19,7 @@
       var cx=W*.74,cy=H*.34,R=Math.min(W,H)*.36;g.strokeStyle='rgba(127,211,255,.06)';
       for(var j=0;j<3;j++){g.beginPath();for(var a=0;a<=6.3;a+=.012){var r=R*(.78+j*.08)+R*.08*Math.sin(a*18+(reduce?0:t*.12)+j),px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;a?g.lineTo(px,py):g.moveTo(px,py)}g.stroke()}}
     requestAnimationFrame(draw)}
-  function leds(){var s=document.querySelector('.sheet');if(!s)return;['led0','led1 v','led2'].forEach(function(n){var i=document.createElement('i');i.className='led '+n;s.appendChild(i)})}
+  function leds(){var s=document.querySelector('.sheet');if(!s)return;['led0','led1 lv','led2'].forEach(function(n){var i=document.createElement('i');i.className='led '+n;s.appendChild(i)})}
   function go(){fiber();leds()}
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',go):go();
 })();
