@@ -9,6 +9,7 @@ html.obsidian{
   background:#000;color-scheme:dark}
 html.obsidian body{background:#000}
 html.obsidian #bokeh{opacity:.3;filter:saturate(.8) brightness(.55)}
+html.obsidian #obs-motes{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;mix-blend-mode:screen}
 html.obsidian #obs-fiber{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 
 /* the sheet: a black-pearl capsule */
