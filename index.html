@@ -56,6 +56,12 @@ p{max-width:62ch}
 .bar nav{display:flex;gap:34px;font-size:12px}
 .bar nav a{text-decoration:none;color:var(--mist);transition:color .2s}
 .bar nav a:hover{color:var(--ink)}
+.bar{position:relative;z-index:30}
+.bar.float{position:fixed;top:10px;left:50%;width:min(1320px,100% - 56px);transform:translate(-50%,-140%);padding-block:16px;background:rgba(27,25,52,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;box-shadow:0 18px 50px rgba(10,6,40,.55),0 0 0 1px rgba(255,255,255,.07);transition:transform .35s ease}
+.bar.float.show{transform:translate(-50%,0)}
+.bar-spacer{display:none}.bar.float+.bar-spacer{display:block}
+@media (max-width:700px){.bar.float{width:calc(100% - 20px);top:6px}}
+@media (prefers-reduced-motion:reduce){.bar.float{transition:none}}
 @media (max-width:900px){.bar nav{display:none}}
 
 /* hero: the circle forms, light pours into the name */
@@ -224,6 +230,7 @@ section>.in{position:relative;z-index:1}
     <a class="home wide" href="#top" aria-label="Alchemy Studios, home"><img src="assets/brand/alchemy-sigil.webp" alt="">Alchemy Studios</a>
     <nav class="wide" aria-label="Sections"><a href="#studio">Studio</a><a href="#disciplines">Disciplines</a><a href="#platforms">Platforms</a><a href="#work">Work</a><a href="#branding">Branding</a><a href="#record">Record</a><a href="#contact">Contact</a></nav>
   </header>
+  <div class="bar-spacer" id="barSpacer" aria-hidden="true"></div>
 
   <div class="hero" id="hero">
     <canvas id="forge" aria-hidden="true"></canvas>
@@ -446,6 +453,18 @@ section>.in{position:relative;z-index:1}
 <div class="lb" id="lb" hidden role="dialog" aria-label="Picture, full size"><div><img id="lbI" alt=""><p id="lbC"></p></div></div>
 
 <script>
+/* the top menu: in place at the top; once you have scrolled down, it slides back in whenever you scroll up */
+(function(){var bar=document.querySelector('header.bar'),sp=document.getElementById('barSpacer'),y0=scrollY,home=0,ticking=false;
+  function measure(){var r=bar.getBoundingClientRect();if(!bar.classList.contains('float'))home=r.top+scrollY+r.height;sp.style.height=r.height+'px'}
+  function upd(){ticking=false;var y=scrollY,up=y<y0-2,down=y>y0+2;
+    if(y<=home){bar.classList.remove('float','show')}
+    else{if(!bar.classList.contains('float')){bar.classList.add('float');void bar.offsetWidth}
+      if(up)bar.classList.add('show');else if(down)bar.classList.remove('show')}
+    y0=y}
+  measure();addEventListener('resize',measure);
+  addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(upd)}},{passive:true});
+  bar.addEventListener('click',function(e){if(e.target.closest('a'))setTimeout(function(){bar.classList.remove('show')},50)});
+})();
 (function(){
   'use strict';
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches, DPR=Math.min(window.devicePixelRatio||1,1.6);
@@ -454,11 +473,15 @@ section>.in{position:relative;z-index:1}
   (function(){
     var c=document.getElementById('bokeh'),g=c.getContext('2d'),W,H,dots=[],stars=[];
     var COL=[[139,108,255],[110,90,240],[43,59,234],[200,180,255],[255,255,255],[127,211,255]];
-    function size(){W=c.width=innerWidth*DPR;H=c.height=innerHeight*DPR;dots=[];stars=[];
+    var BK=.5;   /* half resolution: the bokeh is soft light, so nobody sees the difference, and it costs a quarter of the work */
+    function size(){W=c.width=Math.round(innerWidth*BK);H=c.height=Math.round(innerHeight*BK);var DPR=BK;dots=[];stars=[];
       var n=Math.round(Math.min(26,innerWidth/55));
       for(var i=0;i<n;i++){var col=COL[i%COL.length];dots.push({x:Math.random()*W,y:Math.random()*H,r:(40+Math.random()*170)*DPR,c:col,a:.12+Math.random()*.32,vx:(Math.random()-.5)*.12*DPR,vy:(Math.random()-.5)*.1*DPR,p:Math.random()*6.3})}
       for(i=0;i<14;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:(2+Math.random()*4)*DPR,p:Math.random()*6.3})}
+    var last=0,DPR=BK;
     function frame(t){
+      if(!reduce&&t-last<33){requestAnimationFrame(frame);return}last=t;
+      if(document.hidden){setTimeout(function(){requestAnimationFrame(frame)},500);return}
       var bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#3b2a8a');bg.addColorStop(.5,'#5a3fb5');bg.addColorStop(1,'#2b2470');g.fillStyle=bg;g.fillRect(0,0,W,H);
       g.globalCompositeOperation='lighter';
       dots.forEach(function(d){if(!reduce){d.x+=d.vx;d.y+=d.vy;if(d.x<-d.r)d.x=W+d.r;if(d.x>W+d.r)d.x=-d.r;if(d.y<-d.r)d.y=H+d.r;if(d.y>H+d.r)d.y=-d.r}
@@ -507,13 +530,16 @@ section>.in{position:relative;z-index:1}
       for(var j=parts.length-1;j>=0;j--){var p=parts[j];p.life++;p.x+=p.vx;var k2=Math.max(0,Math.min(1,(p.x-(cx+R))/(tx-cx-R))),yy=p.y+(ty-p.y)*k2*k2+Math.sin(p.x/(60*DPR)+p.ph)*p.amp*(1-k2)*Math.min(1,p.life/40);
         var lf=Math.min(1-p.life/p.max,(tx+W*.03-p.x)/(W*.05));if(lf<=0||p.x>W){parts.splice(j,1);continue}
         var col=p.hue<.55?'139,108,255':(p.hue<.85?'127,211,255':'255,255,255');
-        g.fillStyle='rgba('+col+','+(.55*lf)+')';g.shadowColor='rgba('+col+',1)';g.shadowBlur=12*DPR;g.beginPath();g.arc(p.x,yy,(1+lf*1.6)*DPR,0,6.283);g.fill()}
+        var rr2=(1+lf*1.6)*DPR;g.fillStyle='rgba('+col+','+(.12*lf)+')';g.beginPath();g.arc(p.x,yy,rr2*4.5,0,6.283);g.fill();g.fillStyle='rgba('+col+','+(.6*lf)+')';g.beginPath();g.arc(p.x,yy,rr2,0,6.283);g.fill()}
       g.restore();
       if(t>2.6&&!hero.classList.contains('lit'))hero.classList.add('lit');
       if(t>3.6&&!hero.classList.contains('named'))hero.classList.add('named');
-      if(!reduce&&!document.hidden)requestAnimationFrame(draw)}
+      if(!reduce&&!document.hidden&&onScreen)requestAnimationFrame(draw);else running=false}
+    var onScreen=true,running=true;
+    function wake(){if(!running&&onScreen&&!document.hidden&&!reduce){running=true;requestAnimationFrame(draw)}}
+    if('IntersectionObserver' in window)new IntersectionObserver(function(es){onScreen=es[0].isIntersecting;wake()}).observe(hero);
     size();addEventListener('resize',function(){size()});
-    document.addEventListener('visibilitychange',function(){if(!document.hidden&&!reduce)requestAnimationFrame(draw)});
+    document.addEventListener('visibilitychange',wake);
     requestAnimationFrame(draw);
   })();
 
@@ -607,7 +633,8 @@ section>.in{position:relative;z-index:1}
     return [[0,0],[w,0],[w,h],[c*1.4,h],[0,h-c*1.4],[0,h*.55],[c*.5,h*.55-c*.5],[c*.5,h*.3],[0,h*.3-c*.5]];}
   function inset(pts,w,h,d){var cx=w/2,cy=h/2;return pts.map(function(p){return [p[0]+(p[0]<cx?d:-d),p[1]+(p[1]<cy?d:-d)]})}
   function frame(f,i){
-    var w=f.offsetWidth,h=f.offsetHeight;if(!w||!h)return;var v=i%4,c=Math.max(14,Math.min(26,w*.07));
+    var rb=f.getBoundingClientRect();if(rb.bottom<-1400||rb.top>innerHeight+1400){f._hud=null;return}   /* far off screen: drawn when it comes near */
+    var w=f.offsetWidth,h=f.offsetHeight;if(!w||!h)return;var key=w+'x'+h+':'+(i%4);if(f._hud===key)return;f._hud=key;var v=i%4,c=Math.max(14,Math.min(26,w*.07));
     var outer=shape(v,w,h,c);f.style.clipPath='polygon('+outer.map(function(p){return p[0].toFixed(1)+'px '+p[1].toFixed(1)+'px'}).join(',')+')';
     var svg=f.querySelector('svg.hud');if(!svg){svg=document.createElementNS(NS,'svg');svg.setAttribute('class','hud');svg.setAttribute('aria-hidden','true');f.appendChild(svg)}
     svg.setAttribute('viewBox','0 0 '+w+' '+h);var e=inset(outer,w,h,5),o='';
@@ -627,6 +654,7 @@ section>.in{position:relative;z-index:1}
   function frameAll(){[].forEach.call(grid.children,function(f,i){if(!f.hidden)frame(f,i)});HF.forEach(function(f){frame(f,idx(f))})}
   if('ResizeObserver' in window){var ro=new ResizeObserver(function(es){es.forEach(function(e){frame(e.target,idx(e.target))})});[].forEach.call(grid.children,function(f){ro.observe(f)});HF.forEach(function(f){ro.observe(f)})}
   else{addEventListener('resize',frameAll)}
+  if('IntersectionObserver' in window){var near=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)frame(e.target,idx(e.target))})},{rootMargin:'1200px 0px'});[].forEach.call(grid.children,function(f){near.observe(f)});HF.forEach(function(f){near.observe(f)})}
   addEventListener('load',frameAll);frameAll();[].forEach.call(document.querySelectorAll('#grid img,figure.hf img'),function(im){im.addEventListener('load',function(){var f=im.parentNode;frame(f,idx(f))})});
   var bs=[].slice.call(document.querySelectorAll('.filters button'));
   bs.forEach(function(b){b.onclick=function(){bs.forEach(function(x){x.setAttribute('aria-pressed',x===b)});[].forEach.call(grid.children,function(f){f.hidden=!(b.dataset.f==='all'||f.dataset.f===b.dataset.f)})}});
