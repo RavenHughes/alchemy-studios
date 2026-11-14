@@ -62,7 +62,16 @@ p{max-width:62ch}
 .bar-spacer{display:none}.bar.float+.bar-spacer{display:block}
 @media (max-width:700px){.bar.float{width:calc(100% - 20px);top:6px}}
 @media (prefers-reduced-motion:reduce){.bar.float{transition:none}}
-@media (max-width:900px){.bar nav{display:none}}
+@media (max-width:900px){.bar nav.wide{display:none}}
+.menu-btn{display:none;width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0}
+.menu-btn span{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink)}
+.menu-btn:focus-visible,.menu-drop a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.menu-drop{position:absolute;right:clamp(12px,3vw,40px);top:calc(100% + 6px);display:flex;flex-direction:column;min-width:200px;padding:8px;border-radius:12px;background:rgba(27,25,52,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 18px 50px rgba(10,6,40,.55),0 0 0 1px rgba(255,255,255,.08);z-index:40}
+.bar .menu-drop{gap:2px;font-size:14px;background:#1b1934}
+.menu-drop[hidden]{display:none}
+.menu-drop a{padding:12px 14px;border-radius:8px;text-decoration:none;color:var(--mist);font-size:14px}
+.menu-drop a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+@media (max-width:900px){.menu-btn{display:inline-flex}}
 
 /* hero: the circle forms, light pours into the name */
 .hero{position:relative;height:min(78vh,720px);min-height:480px}
@@ -229,6 +238,8 @@ section>.in{position:relative;z-index:1}
   <header class="bar">
     <a class="home wide" href="#top" aria-label="Alchemy Studios, home"><img src="assets/brand/alchemy-sigil.webp" alt="">Alchemy Studios</a>
     <nav class="wide" aria-label="Sections"><a href="#studio">Studio</a><a href="#disciplines">Disciplines</a><a href="#platforms">Platforms</a><a href="#work">Work</a><a href="#branding">Branding</a><a href="#record">Record</a><a href="#contact">Contact</a></nav>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menuDrop" aria-label="Menu"><span></span><span></span><span></span></button>
+    <nav id="menuDrop" class="menu-drop" aria-label="Sections" hidden><a href="#studio">Studio</a><a href="#disciplines">Disciplines</a><a href="#platforms">Platforms</a><a href="#work">Work</a><a href="#branding">Branding</a><a href="#record">Record</a><a href="#contact">Contact</a></nav>
   </header>
   <div class="bar-spacer" id="barSpacer" aria-hidden="true"></div>
 
@@ -453,17 +464,21 @@ section>.in{position:relative;z-index:1}
 <div class="lb" id="lb" hidden role="dialog" aria-label="Picture, full size"><div><img id="lbI" alt=""><p id="lbC"></p></div></div>
 
 <script>
-/* the top menu: in place at the top; once you have scrolled down, it slides back in whenever you scroll up */
-(function(){var bar=document.querySelector('header.bar'),sp=document.getElementById('barSpacer'),y0=scrollY,home=0,ticking=false;
+/* the top menu: in place at the top; once you have scrolled past it, it floats at the top of the screen and stays there */
+(function(){var bar=document.querySelector('header.bar'),sp=document.getElementById('barSpacer'),home=0,ticking=false,
+    btn=bar.querySelector('.menu-btn'),drop=document.getElementById('menuDrop');
   function measure(){var r=bar.getBoundingClientRect();if(!bar.classList.contains('float'))home=r.top+scrollY+r.height;sp.style.height=r.height+'px'}
-  function upd(){ticking=false;var y=scrollY,up=y<y0-2,down=y>y0+2;
+  function upd(){ticking=false;var y=scrollY;
     if(y<=home){bar.classList.remove('float','show')}
-    else{if(!bar.classList.contains('float')){bar.classList.add('float');void bar.offsetWidth}
-      if(up)bar.classList.add('show');else if(down)bar.classList.remove('show')}
-    y0=y}
+    else if(!bar.classList.contains('float')){bar.classList.add('float');void bar.offsetWidth;bar.classList.add('show')}}
   measure();addEventListener('resize',measure);
   addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(upd)}},{passive:true});
-  bar.addEventListener('click',function(e){if(e.target.closest('a'))setTimeout(function(){bar.classList.remove('show')},50)});
+  /* small screens: the menu button opens the section links */
+  function setOpen(o){drop.hidden=!o;btn.setAttribute('aria-expanded',o?'true':'false')}
+  btn.addEventListener('click',function(){setOpen(drop.hidden)});
+  drop.addEventListener('click',function(e){if(e.target.closest('a'))setOpen(false)});
+  addEventListener('keydown',function(e){if(e.key==='Escape')setOpen(false)});
+  document.addEventListener('click',function(e){if(!e.target.closest('header.bar'))setOpen(false)});
 })();
 (function(){
   'use strict';
