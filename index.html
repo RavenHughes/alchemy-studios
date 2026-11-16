@@ -136,6 +136,22 @@ header.bar.solid{background:rgba(8,9,9,.92);backdrop-filter:blur(10px);-webkit-b
 /* 01 studio */
 #studio .body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(30px,6vw,110px);margin-top:56px;padding-bottom:40px}
 #studio .body p+p{margin-top:18px}
+/* founder cameo */
+#founder{display:grid;grid-template-columns:minmax(220px,340px) minmax(0,1fr);gap:clamp(34px,6vw,110px);align-items:center;padding:clamp(50px,8vh,90px) 0 40px;border-top:1px solid var(--line)}
+.cameo{position:relative;aspect-ratio:4/5;width:100%;max-width:340px;margin:auto}
+.cameo .bezel{position:absolute;inset:0;border-radius:50%;padding:14px;background:conic-gradient(from 210deg,#6e5222,#e9d9ae 12%,#a47d35 25%,#5a4219 38%,#e3be68 52%,#84662E 66%,#f1e2b8 80%,#7a5c26 92%,#6e5222);box-shadow:0 18px 40px rgba(0,0,0,.75),inset 0 0 0 1px rgba(0,0,0,.6)}
+.cameo .bezel::before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px dashed rgba(20,14,6,.55)}
+.cameo .face{position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(20,14,6,.8)}
+.cameo .face img{width:100%;height:100%;object-fit:cover;display:block}
+.cameo .face::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(ellipse at 50% 42%,transparent 52%,rgba(8,7,5,.72) 100%),linear-gradient(140deg,rgba(255,250,235,.16),transparent 38%)}
+.cameo .tag{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);white-space:nowrap;font-family:var(--cond);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--black);background:linear-gradient(180deg,#e9d9ae,#c49a45 60%,#8a6a2e);padding:7px 16px 6px;box-shadow:0 4px 10px rgba(0,0,0,.6)}
+#founder .k{display:block;margin-bottom:16px}
+#founder h3.name{font-family:var(--eng);font-size:clamp(26px,2.6vw,38px);letter-spacing:.16em;font-weight:400;color:var(--ivory);text-transform:uppercase;line-height:1.15}
+#founder .name em{font-style:normal;color:var(--gold)}
+#founder .role{margin-top:10px;font-family:var(--cond);font-size:14px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+#founder p.bio{margin-top:20px;font-size:17px;max-width:none}
+#founder .creds{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+@media (max-width:760px){#founder{grid-template-columns:1fr}.cameo{max-width:260px}}
 #studio .what{font-family:var(--eng);font-size:clamp(24px,2.4vw,34px);letter-spacing:.08em;color:var(--bright);margin-top:30px;font-style:normal}
 .figs{border-top:1px solid var(--hair)}
 .figs div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line);align-items:baseline}
@@ -488,6 +504,23 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
         <div><b>3,000+</b><span>trucks and vehicles wrapped by our installers</span></div>
         <div><b>40+ yrs</b><span>in visual communication, branding and software</span></div>
         <div><b>2015</b><span>Alchemy Studios, LLC organized in Florida, continuing the work of DesignWerx, Inc.</span></div>
+      </div>
+    </div>
+    <div id="founder">
+      <div class="cameo reveal">
+        <div class="bezel"><div class="face"><img src="assets/brand/founder-cameo.webp" width="400" height="500" alt="Portrait of J. Daniel Hughes, founder of Alchemy Studios" loading="lazy" decoding="async"></div></div>
+        <span class="tag">Founder</span>
+      </div>
+      <div class="reveal" style="transition-delay:.25s">
+        <span class="k mono">The founder · AS / 01-F</span>
+        <h3 class="name">J. Daniel Hughes <em>“Raven”</em></h3>
+        <div class="role">Managing Member &amp; Creative Director, Alchemy Studios, LLC</div>
+        <p class="bio">Alchemy Studios is owner-run. J. Daniel Hughes, known around the shop as Raven, founded the studio as DesignWerx, Inc. and has led it as Alchemy Studios, LLC since 2015. He sets the direction for every project, and the work on this page passes through his hands before it leaves the studio.</p>
+        <p class="bio">He is entirely self-taught and has spent more than forty years working across disciplines that are usually kept apart: illustration, oil painting, sculpture and calligraphy; props, special effects and fabrication; brand systems and print; software, 3D mechanical design and rapid prototyping. He has designed and built some 700 platforms and websites, led the studio's work as a preferred vendor to major theme parks for over 37 years, and taught Photoshop and Illustrator for decades.</p>
+        <p class="bio">Today he directs the studio's own developments, including The Realm, an Unreal Engine world for VR and desktop, and the Apex Passport Card, alongside client brands and builds. The studio's laser lab, woodshop and 3D modeling studio all run under his direction.</p>
+        <div class="creds">
+          <span class="mono">Est. as DesignWerx, Inc.</span><span class="mono">Alchemy Studios, LLC · 2015</span><span class="mono">40+ yrs</span><span class="mono">Orlando, Florida</span>
+        </div>
       </div>
     </div>
   </div>
