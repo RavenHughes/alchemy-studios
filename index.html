@@ -376,6 +376,11 @@ footer .legal a{text-decoration:none;border-bottom:1px solid var(--line)}
 #intro.gone{opacity:0;visibility:hidden}
 #hero:not(.drawn) .reveal{opacity:0!important;transform:translateY(14px)!important}
 #intro .lg{width:min(74vh,84vw)}
+#intro .reel{position:absolute;inset:0;overflow:hidden}
+#intro .reel img{position:absolute;top:-4%;left:0;width:116%;height:108%;max-width:none;object-fit:cover;opacity:0;will-change:transform,opacity,filter}
+#intro .reel::after{content:"";position:absolute;inset:0;background:radial-gradient(46% 52% at 50% 50%,rgba(8,9,9,.86),rgba(8,9,9,.55) 60%,rgba(8,9,9,.78) 100%),linear-gradient(180deg,rgba(8,9,9,.5),transparent 25%,transparent 75%,rgba(8,9,9,.6))}
+#intro .lg{position:relative;z-index:2}
+
 #intro .skip{position:absolute;right:24px;bottom:22px;font:400 11px var(--mono);letter-spacing:.22em;text-transform:uppercase;color:rgba(232,223,201,.6);border:1px solid rgba(196,154,69,.3);padding:9px 14px}
 #intro .skip:hover{color:var(--bright);border-color:var(--gold)}
 html.intro-on body{overflow:hidden}
@@ -384,7 +389,7 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
 </style>
 </head>
 <body>
-<div id="intro" aria-hidden="true"><div class="lg" id="introLogo"></div><button class="skip" type="button" id="skip">Skip</button></div>
+<div id="intro" aria-hidden="true"><div class="reel" id="reel"></div><div class="lg" id="introLogo"></div><button class="skip" type="button" id="skip">Skip</button></div>
 
 <header class="bar" id="bar">
   <div class="row">
@@ -647,12 +652,26 @@ btn.addEventListener('click',function(){var o=!nav.classList.contains('open');na
 nav.addEventListener('click',function(e){if(e.target.closest('a')){nav.classList.remove('open');btn.setAttribute('aria-expanded','false')}});
 
 /* hero: the hall fades up, then the gold point walks the development path */
+
+/* behind the mark: the shop at work, each photo melting into the next as the reel drifts left */
+function reel(box){var R=['assets/brand/laser-lab.webp','assets/work/frogbox-airbrush.webp','assets/platforms/realm-grand.webp','assets/work/studio-shop.webp','assets/work/bludger-case-heat-aging.webp','assets/platforms/realm-hyperion.webp','assets/work/slimjim-wrap-install.webp','assets/work/mall-gears-install.webp','assets/work/ghost-cat-painting.webp','assets/work/kemperle-install.webp','assets/platforms/de-tree.webp','assets/work/wakoola-grill-sign.webp'],i=0,live=true,nextIm=null;
+  function load(k){var im=new Image();im.alt='';im.decoding='async';im.src=R[k%R.length];return im}
+  function play(){if(!live||!document.body.contains(box))return;var im=nextIm||load(i);nextIm=load(i+1);
+    var go=function(){if(!live)return;box.appendChild(im);
+      var a=im.animate([{opacity:0,transform:'translateX(0) scale(1.07)',filter:'blur(14px) saturate(.6) brightness(.7)'},
+        {opacity:.62,transform:'translateX(-3%) scale(1.04)',filter:'blur(0) saturate(.75) brightness(.62)',offset:.3},
+        {opacity:.62,transform:'translateX(-7%) scale(1.03)',filter:'blur(0) saturate(.75) brightness(.62)',offset:.7},
+        {opacity:0,transform:'translateX(-10%) scale(1.07)',filter:'blur(14px) saturate(.6) brightness(.7)'}],{duration:6400,easing:'linear'});
+      a.onfinish=function(){im.remove()};i++;setTimeout(play,3200)};
+    if(im.complete&&im.naturalWidth)go();else{im.onload=go;im.onerror=function(){i++;play()}}}
+  play();return function(){live=false}}
 function openHero(){requestAnimationFrame(function(){requestAnimationFrame(function(){$('#hero').classList.add('drawn')})})}
 var intro=$('#intro'),seen=false;try{seen=sessionStorage.getItem('as-intro')==='1'}catch(e){}
 if(seen||reduce){intro.remove();openHero()}
 else{document.documentElement.classList.add('intro-on');
   var finish=function(){if(finish.done)return;finish.done=true;try{sessionStorage.setItem('as-intro','1')}catch(e){}
-    intro.classList.add('gone');document.documentElement.classList.remove('intro-on');openHero();setTimeout(function(){intro.remove()},1500)};
+    intro.classList.add('gone');document.documentElement.classList.remove('intro-on');openHero();setTimeout(function(){stopReel&&stopReel();intro.remove()},1500)};
+  var stopReel=reel($('#reel'));
   var IL=AlchemyLogo($('#introLogo'),{onDone:function(){setTimeout(finish,900)}});
   $('#skip').addEventListener('click',function(){IL.stop();finish()});}
 /* the footer mark assembles once, when it comes into view */
