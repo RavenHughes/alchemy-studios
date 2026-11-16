@@ -875,6 +875,7 @@ var W=[
  ['hangar-compass','space','34-foot steel and epoxy compass rose for the Leon Air hangar, Ocala, Florida',1300,1682],
  ['acguys-van','fleet','Full van wrap for AC Guys Cooling and Heating Services',1600,1200],
  ['acguys-van-side','fleet','AC Guys van wrap, driver side, with the diamond-plate lower panels',1600,1200],
+ ['john-n-blog-header','web','Website header for John N.\'s Real Estate and Financial News Blog, his signature mark over a lit Florida home',1600,764],
  ['troys-plumbing-van','fleet','Full Sprinter van wrap for Troy\'s Plumbing, mascot, flag and diamond-plate logo',1600,1200],
  ['troys-plumbing-install','fleet','Vicki assisting on the Troy\'s Plumbing wrap install, rear doors',1600,1200],
  ['kemperle-sprinter','fleet','Full Sprinter van wrap for Albert Kemperle of Florida',1600,1195],
@@ -897,15 +898,15 @@ var W=[
  ['residential-rockwall','build','Custom residential rock wall, handholds molded and installed',1300,1682],
  ['custom-wheels','make','Custom wheel finishing',1800,1350],
  ['rockwall-lookout','build','Lookout Mountain modular climbing wall',1300,1682]];
-var DISC={park:'Theme parks',build:'Themed builds',fleet:'Fleet graphics',marine:'Marine and motorsports',space:'Signage and spaces',make:'Props and prototypes'};
+var DISC={web:'Web design',park:'Theme parks',build:'Themed builds',fleet:'Fleet graphics',marine:'Marine and motorsports',space:'Signage and spaces',make:'Props and prototypes'};
 function project(c){c=c.toLowerCase();
   if(/bludger/.test(c))return 'Bludgers and case';if(/chocolate frog|frog box/.test(c))return 'Chocolate Frog box';if(/ghost cat/.test(c))return 'The Ghost Cat';
   if(/slim jim/.test(c))return 'Slim Jim';if(/samsung/.test(c))return 'Samsung X Games';if(/kemperle/.test(c))return 'Kemperle of Florida';
   if(/ac guys/.test(c))return 'AC Guys';if(/troy/.test(c))return 'Troy\'s Plumbing';if(/gt marine/.test(c))return 'GT Marine';if(/servando/.test(c))return 'Servando\'s';
   if(/gear installation/.test(c))return 'Clockwork gears';if(/mardi gras/.test(c))return 'Daytona Mardi Gras';if(/climbing wall|rock wall/.test(c))return 'Climbing walls';
-  if(/zipline/.test(c))return 'Zipline towers';return 'Single commissions'}
+  if(/zipline/.test(c))return 'Zipline towers';if(/john n/.test(c))return 'John N.';return 'Single commissions'}
 function material(c){c=c.toLowerCase();
-  if(/wrap|vinyl|livery|graphics/.test(c))return 'Vinyl';if(/steel|epoxy/.test(c))return 'Steel and epoxy';if(/foam/.test(c))return 'Foam';
+  if(/website/.test(c))return 'Digital';if(/wrap|vinyl|livery|graphics/.test(c))return 'Vinyl';if(/steel|epoxy/.test(c))return 'Steel and epoxy';if(/foam/.test(c))return 'Foam';
   if(/wood|gold-leaf/.test(c))return 'Wood and gold leaf';if(/climbing|rock wall|handholds|shell|tower/.test(c))return 'Structure and resin';
   if(/sculpt|cast/.test(c))return 'Sculpt and cast';if(/paint|aged|aging|crackle|patina|airbrush|hammered|finish|gold/.test(c))return 'Paint and patina';return 'Mixed'}
 var REC=W.map(function(w,i){var y=(w[2].match(/\b(19|20)\d\d\b/)||[''])[0];
