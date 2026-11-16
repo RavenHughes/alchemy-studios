@@ -734,9 +734,9 @@ nav.addEventListener('click',function(e){if(e.target.closest('a')){nav.classList
 /* hero: the hall fades up, then the gold point walks the development path */
 
 /* behind the mark: the shop at work, each photo melting into the next as the reel drifts left */
-function reel(box){var vis=true;if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting}).observe(box);var R=['assets/brand/laser-lab.webp','assets/work/frogbox-airbrush.webp','assets/platforms/realm-grand.webp','assets/work/bludger-case-heat-aging.webp','assets/platforms/realm-hyperion.webp','assets/work/slimjim-wrap-install.webp','assets/work/ghost-cat-painting.webp','assets/work/kemperle-install.webp','assets/platforms/de-tree.webp','assets/work/wakoola-grill-sign.webp'],i=0,live=true,nextIm=null;
+function reel(box,onEnd){var vis=true;if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting}).observe(box);var R=['assets/brand/laser-lab.webp','assets/work/frogbox-airbrush.webp','assets/platforms/realm-grand.webp','assets/work/bludger-case-heat-aging.webp','assets/platforms/realm-hyperion.webp','assets/work/slimjim-wrap-install.webp','assets/work/ghost-cat-painting.webp','assets/work/kemperle-install.webp','assets/platforms/de-tree.webp','assets/work/wakoola-grill-sign.webp'],i=0,live=true,nextIm=null;
   function load(k){var im=new Image();im.alt='';im.decoding='async';im.src=R[k%R.length];return im}
-  function play(){if(!live||!document.body.contains(box))return;if(!vis||document.hidden){setTimeout(play,1000);return}var im=nextIm||load(i);nextIm=load(i+1);
+  function play(){if(!live||!document.body.contains(box))return;if(onEnd&&i>=R.length){live=false;setTimeout(onEnd,3400);return}if(!vis||document.hidden){setTimeout(play,1000);return}var im=nextIm||load(i);nextIm=load(i+1);
     var go=function(){if(!live)return;box.appendChild(im);
       var a=im.animate([{opacity:0,transform:'translateX(0) scale(1.07)',filter:'blur(14px) grayscale(1) brightness(.7)'},
         {opacity:.85,transform:'translateX(-3%) scale(1.04)',filter:'blur(0) grayscale(1) brightness(.8)',offset:.3},
@@ -752,7 +752,9 @@ function openHero(){var H=$('#hero'),dim=$('#dim');requestAnimationFrame(functio
   setTimeout(function(){dim.style.opacity=.65},8000);
   setTimeout(function(){dim.style.opacity=.9;H.classList.add('lights-out')},10400);
   /* the work plays over the dark hall, then the mark returns over a half-black veil and comes alive */
-  setTimeout(function(){reel($('#hreel'))},11600);
+  /* after one pass of the work, back to the hall as it first appeared */
+  setTimeout(function(){reel($('#hreel'),function(){var lg=$('#heroLogo');lg.style.transition='opacity 1.8s ease';lg.style.opacity=0;
+    $('#shade').classList.remove('on');dim.style.opacity=0;H.classList.remove('lights-out');setTimeout(function(){lg.innerHTML='';lg.style.opacity=''},2000)})},11600);
   setTimeout(function(){$('#shade').classList.add('on')},13200);
   setTimeout(function(){AlchemyLogo($('#heroLogo'))},13800)}
 var intro=$('#intro'),seen=false;try{seen=sessionStorage.getItem('as-intro')==='1'}catch(e){}
