@@ -75,7 +75,7 @@ header.bar{position:fixed;top:0;left:0;right:0;z-index:50;transition:background 
 header.bar.solid{background:rgba(8,9,9,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bar .row{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:20px var(--pad) 16px}
 .bar .home{display:flex;align-items:center;gap:14px;text-decoration:none}
-.bar .home .emb{width:62px;height:auto}
+.bar .home .emb{width:62px;height:auto;filter:drop-shadow(0 2px .5px rgba(0,0,0,.9))}
 .bar .wm{display:flex;flex-direction:column;line-height:1.15}
 .bar .wm .nm{font-size:21px;letter-spacing:.14em;white-space:nowrap;color:var(--bright)}
 .bar .wm .sub{font:400 10px var(--cond);letter-spacing:.32em;text-transform:uppercase;color:rgba(232,223,201,.55);margin-top:3px}
@@ -373,6 +373,30 @@ footer .legal a{text-decoration:none;border-bottom:1px solid var(--line)}
 
 
 
+
+#beginDlg .viewer{max-width:860px}
+.bform h2{margin:10px 0 26px;font-size:clamp(22px,2.6vw,34px)}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.bgrid label,#beginDlg label{display:flex;flex-direction:column;gap:8px}
+.bgrid .full{grid-column:1/-1}
+.bform input,.bform select,.bform textarea{font:400 18px var(--serif);color:var(--ivory);background:transparent;border:0;border-bottom:1px solid var(--hair);padding:7px 0 9px;border-radius:0;appearance:none}
+.bform select option{background:#0c0d0d}.bform textarea{min-height:110px;resize:vertical;font-style:italic}
+.bform input:focus,.bform select:focus,.bform textarea:focus{outline:none;border-bottom-color:var(--bright)}
+.bform .big{font-family:var(--eng);font-size:20px;letter-spacing:.14em;color:var(--bright);text-transform:uppercase}
+.bform .send{display:flex;gap:18px;align-items:center;margin-top:26px;flex-wrap:wrap}
+.bform .err,#begin .err{font:400 14px var(--cond);letter-spacing:.14em;text-transform:uppercase;color:#d98b6b}
+.bform .err.ok,#begin .err.ok{color:var(--bright)}
+
+.pz{max-width:520px}
+.pz svg{display:block;width:100%;height:auto;border-radius:6px}
+.pz .pz-t{font:400 12px var(--eng);letter-spacing:.22em;fill:var(--bright);text-transform:uppercase}
+.pz .pz-s{font:300 7.5px var(--mono);letter-spacing:.08em;fill:rgba(232,223,201,.65);text-transform:uppercase}
+.pz .pz-ok{font:400 9px var(--cond);letter-spacing:.2em;fill:var(--bright);text-transform:uppercase}
+.pz .pz-gear{transition:transform .08s linear}
+.pz input[type=range]{width:100%;margin-top:10px;accent-color:#c49a45}
+.pz.done svg{box-shadow:0 0 0 1px #E3BE68,0 0 22px rgba(227,190,104,.35)}
+.hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+@media (max-width:700px){.bgrid{grid-template-columns:1fr}}
 /* the hall dims, the work plays over it, and the mark returns */
 #hero .dim{position:absolute;inset:0;z-index:3;background:#050505;opacity:0;transition:opacity 1.6s ease;pointer-events:none}
 #hero .hreel{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none}
@@ -398,6 +422,8 @@ footer .legal a{text-decoration:none;border-bottom:1px solid var(--line)}
 #intro .skip:hover{color:var(--bright);border-color:var(--gold)}
 html.intro-on body{overflow:hidden}
 footer .lockup{width:min(300px,70vw);margin:0 auto}
+.alogo .alogo-stage{filter:drop-shadow(0 5px 1px rgba(0,0,0,.9))}
+.marks figure:first-child img{filter:drop-shadow(0 3px .5px rgba(0,0,0,.9))}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
 </style>
 </head>
@@ -625,9 +651,20 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
       <label><span class="mono">Development stage</span><select name="stage">
         <option>An idea</option><option>Sketches or drawings</option><option>A working concept</option><option>A prototype</option><option>Ready for production</option></select></label>
       <label><span class="mono">Email</span><input name="email" type="email" autocomplete="email" required></label>
+      <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
       <label class="full"><span class="mono">Project description</span><textarea name="desc" placeholder="Size, materials, deadline, anything you already know"></textarea></label>
       <label class="full"><span class="big">What are you trying to create?</span><textarea name="create" required></textarea></label>
-      <div class="send"><button class="cta" type="submit">Begin development</button><span class="err" id="formErr" role="alert"></span><span class="mono">Opens your email, addressed to info@alchemystudiosorlando.com. We reply within two business days.</span></div>
+      <div class="full" style="grid-column:1/-1"><div class="pz" data-pz><svg viewBox="0 0 270 120" aria-hidden="true"><defs>
+<radialGradient id="pzb" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#f1d58d"/><stop offset=".45" stop-color="#c49a45"/><stop offset="1" stop-color="#5b4318"/></radialGradient>
+<linearGradient id="pzp" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2a2620"/><stop offset="1" stop-color="#0d0c0a"/></linearGradient></defs>
+<rect x="1" y="1" width="268" height="118" rx="6" fill="url(#pzp)" stroke="#84662E"/>
+<g class="pz-ring"><circle cx="60" cy="60" r="44" fill="none" stroke="rgba(196,154,69,.35)" stroke-dasharray="1 5"/></g>
+<g class="pz-ptr"><path d="M60 8 l-6 -6 h12z" fill="#E3BE68"/><line x1="60" y1="8" x2="60" y2="16" stroke="#E3BE68" stroke-width="1.4"/></g>
+<g class="pz-gear"></g>
+<circle cx="60" cy="60" r="7" fill="#1a1712" stroke="#E3BE68"/><circle cx="60" cy="60" r="2.4" fill="#E3BE68"/>
+<text x="118" y="44" class="pz-t">Set the gear</text><text x="118" y="62" class="pz-s">Turn it until the gold</text><text x="118" y="74" class="pz-s">tooth meets the pointer</text><text x="118" y="96" class="pz-ok"></text></svg>
+<input type="range" min="0" max="359" step="1" value="0" aria-label="Turn the brass gear until its gold tooth meets the pointer"></div></div>
+      <div class="send"><button class="cta" type="submit">Begin development</button><span class="err" id="formErr" role="alert"></span><span class="mono">Sent straight to the studio. We reply within two business days.</span></div>
     </form>
   </div>
 </section>
@@ -641,6 +678,32 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
     <p class="legal mono" style="max-width:none">© 2026 Alchemy Studios, LLC · A ZenChip PRIME company · The Realm® is a registered trademark. Client marks belong to their owners.</p>
 </footer>
 
+<dialog id="beginDlg" aria-labelledby="bgT"><form class="viewer bform" id="quickForm" novalidate>
+  <button class="x" type="button" data-close>Close ✕</button>
+  <span class="mono">Begin a project · AS / IN</span>
+  <h2 id="bgT">Everything starts with an idea.</h2>
+  <div class="bgrid">
+    <label><span class="mono">Name</span><input name="name" autocomplete="name" required></label>
+    <label><span class="mono">Email</span><input name="email" type="email" autocomplete="email" required></label>
+    <label><span class="mono">Phone (optional)</span><input name="phone" type="tel" autocomplete="tel"></label>
+    <label><span class="mono">Organization (optional)</span><input name="org" autocomplete="organization"></label>
+    <label><span class="mono">Discipline</span><select name="kind"><option>Industrial design</option><option>Engineering</option><option>Digital development</option><option>Prototyping</option><option>Material development</option><option>Brand systems</option><option>Experience development</option><option>Fleet graphics</option><option>Not sure yet</option></select></label>
+    <label><span class="mono">Timeline</span><select name="when"><option>No fixed date</option><option>Within a month</option><option>One to three months</option><option>Three months or more</option></select></label>
+    <label class="full"><span class="big">What are you trying to create?</span><textarea name="desc" required placeholder="Size, materials, where it will live, anything you already know"></textarea></label>
+    <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+    <div class="full"><div class="pz" data-pz><svg viewBox="0 0 270 120" aria-hidden="true"><defs>
+<radialGradient id="pzb" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#f1d58d"/><stop offset=".45" stop-color="#c49a45"/><stop offset="1" stop-color="#5b4318"/></radialGradient>
+<linearGradient id="pzp" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2a2620"/><stop offset="1" stop-color="#0d0c0a"/></linearGradient></defs>
+<rect x="1" y="1" width="268" height="118" rx="6" fill="url(#pzp)" stroke="#84662E"/>
+<g class="pz-ring"><circle cx="60" cy="60" r="44" fill="none" stroke="rgba(196,154,69,.35)" stroke-dasharray="1 5"/></g>
+<g class="pz-ptr"><path d="M60 8 l-6 -6 h12z" fill="#E3BE68"/><line x1="60" y1="8" x2="60" y2="16" stroke="#E3BE68" stroke-width="1.4"/></g>
+<g class="pz-gear"></g>
+<circle cx="60" cy="60" r="7" fill="#1a1712" stroke="#E3BE68"/><circle cx="60" cy="60" r="2.4" fill="#E3BE68"/>
+<text x="118" y="44" class="pz-t">Set the gear</text><text x="118" y="62" class="pz-s">Turn it until the gold</text><text x="118" y="74" class="pz-s">tooth meets the pointer</text><text x="118" y="96" class="pz-ok"></text></svg>
+<input type="range" min="0" max="359" step="1" value="0" aria-label="Turn the brass gear until its gold tooth meets the pointer"></div></div>
+  </div>
+  <div class="send"><button class="cta" type="submit">Begin development</button><span class="err" role="alert"></span></div>
+</form></dialog>
 <dialog id="dlg" aria-label="Project dossier"><div class="viewer" id="dlgBody"></div></dialog>
 
 <script src="assets/logo/anim.js"></script>
@@ -932,15 +995,44 @@ function openRec(r){var media='<div class="brass'+(r.h>r.w?' tall':'')+'">'+(r.v
   dlgB.querySelector('.x').addEventListener('click',function(){dlg.close()});dlg.className='lightbox';dlg.showModal()}
 dlg.addEventListener('close',function(){var v=dlgB.querySelector('video');if(v)v.pause()});
 
-/* begin a project: composes an email */
-$('#beginForm').addEventListener('submit',function(e){e.preventDefault();var f=e.target,err=$('#formErr');
-  if(!f.name.value.trim()){err.textContent='Add your name first';f.name.focus();return}
-  if(!f.email.value.trim()||!f.email.checkValidity()){err.textContent='Add a valid email so we can reply';f.email.focus();return}
-  if(!f.create.value.trim()){err.textContent='Tell us what you are trying to create';f.create.focus();return}
-  err.textContent='';
-  var body='Name: '+f.name.value+'\nOrganization: '+f.org.value+'\nEmail: '+f.email.value+'\nProject: '+f.project.value+'\nDiscipline: '+f.disc.value+'\nDevelopment stage: '+f.stage.value+'\n\nProject description:\n'+f.desc.value+'\n\nWhat are you trying to create?\n'+f.create.value;
-  location.href='mailto:info@alchemystudiosorlando.com?subject='+encodeURIComponent('Begin a project: '+(f.project.value||f.name.value))+'&body='+encodeURIComponent(body)});
+
+/* the brass puzzle that keeps the bots out */
+function gearPath(){var d='',n=14,R=40,r=33;for(var i=0;i<n;i++){var a0=i/n*6.2832,a1=(i+.18)/n*6.2832,a2=(i+.5)/n*6.2832,a3=(i+.68)/n*6.2832;
+  var P=function(a,rad){return (60+Math.sin(a)*rad).toFixed(2)+' '+(60-Math.cos(a)*rad).toFixed(2)};d+=(i?'L':'M')+P(a0,r)+'L'+P(a1,R)+'L'+P(a2,R)+'L'+P(a3,r)}return d+'Z'}
+function puzzle(box){var svg=box.querySelector('svg'),g=box.querySelector('.pz-gear'),ptr=box.querySelector('.pz-ptr'),inp=box.querySelector('input'),ok=box.querySelector('.pz-ok'),st={a:null,k:''};
+  g.innerHTML='<path d="'+gearPath()+'" fill="url(#pzb)" stroke="#3b2c10" stroke-width=".8"/><circle cx="60" cy="60" r="24" fill="none" stroke="rgba(60,44,16,.6)"/>'+
+    [0,1,2,3,4,5].map(function(i){var a=i/6*6.2832;return '<circle cx="'+(60+Math.sin(a)*16).toFixed(1)+'" cy="'+(60-Math.cos(a)*16).toFixed(1)+'" r="4" fill="#2b2112" opacity=".7"/>'}).join('')+
+    '<path d="M57 20 L60 13 L63 20 Z" fill="#fff6d8" stroke="#E3BE68" stroke-width=".8"/>';
+  inp.value=Math.floor(Math.random()*360);
+  function draw(){var v=+inp.value;g.style.transform='rotate('+v+'deg)';g.style.transformOrigin='60px 60px';
+    var hit=st.a!=null&&Math.abs(((v-st.a+540)%360)-180)<=8;box.classList.toggle('done',hit);ok.textContent=hit?'Assembled ✓':''}
+  inp.addEventListener('input',draw);
+  fetch('begin.php?puzzle=1').then(function(r){return r.json()}).then(function(j){st.a=j.a;st.k=j.k;ptr.setAttribute('transform','rotate('+j.a+' 60 60)');inp.value=(j.a+90+Math.floor(Math.random()*180))%360;draw()}).catch(function(){});
+  draw();return function(fd){fd.set('pa',inp.value);fd.set('pk',st.k)}}
+/* begin a project: the request goes to the studio by email, from the server */
+var t0=Math.floor(Date.now()/1000);
+function sendBrief(f,err,extra){return function(e){e.preventDefault();
+  var v=function(n){return f[n]?String(f[n].value).trim():''};
+  if(!v('name')){err.className='err';err.textContent='Add your name';f.name.focus();return}
+  if(!v('email')||!f.email.checkValidity()){err.className='err';err.textContent='Add an email we can reply to';f.email.focus();return}
+  var d=f.desc||f.create;if(String(d.value).trim().length<10){err.className='err';err.textContent='Tell us a little about the project';d.focus();return}
+  var pz=f.querySelector('[data-pz]');if(pz&&!pz.classList.contains('done')){err.className='err';err.textContent='Turn the brass gear until its tooth meets the pointer';pz.querySelector('input').focus();return}
+  var fd=new FormData(f);fd.append('t',t0);if(extra)extra(fd,f);
+  var b=f.querySelector('[type=submit]');b.disabled=true;err.className='err ok';err.textContent='Sending…';
+  fetch('begin.php',{method:'POST',body:fd}).then(function(r){return r.json().catch(function(){return {ok:false}})}).then(function(j){
+    b.disabled=false;
+    if(j&&j.ok){err.className='err ok';err.textContent='Received. We reply within two business days.';f.reset()}
+    else{err.className='err';err.textContent=(j&&j.error)||'That didn’t send. Please write to info@alchemystudiosorlando.com'}
+  }).catch(function(){b.disabled=false;err.className='err';err.textContent='That didn’t send. Please write to info@alchemystudiosorlando.com'})}}
+var pzMain=puzzle($('#beginForm [data-pz]')),pzQuick=puzzle($('#quickForm [data-pz]'));
+$('#beginForm').addEventListener('submit',sendBrief($('#beginForm'),$('#formErr'),function(fd,f){pzMain(fd);
+  fd.set('kind',f.disc.value);fd.set('desc',(f.create.value+(f.desc.value?'\n\nDetails: '+f.desc.value:'')+(f.project.value?'\n\nProject: '+f.project.value:'')).trim())}));
 $('#beginForm').addEventListener('input',function(){$('#formErr').textContent=''});
+var bd=$('#beginDlg'),qf=$('#quickForm');
+qf.addEventListener('submit',sendBrief(qf,qf.querySelector('.err'),pzQuick));
+qf.querySelector('[data-close]').addEventListener('click',function(){bd.close()});
+bd.addEventListener('click',function(e){if(e.target===bd)bd.close()});
+document.querySelectorAll('a[href="#begin"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();nav.classList.remove('open');bd.showModal();setTimeout(function(){qf.name.focus()},50)})});
 })();
 </script>
 </body>
