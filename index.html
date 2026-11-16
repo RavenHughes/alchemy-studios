@@ -356,20 +356,20 @@ footer .legal a{text-decoration:none;border-bottom:1px solid var(--line)}
 .bench-plate figure.brass figcaption{z-index:5;left:calc(90cqw/14.54);bottom:calc(96cqw/14.54)}
 .viewer .strip .brass img{height:auto;aspect-ratio:4/3}
 
-/* tall frames for the towers: the same brass, turned upright */
-.brass.tall{padding:8.15% 8.6% 8.15% 9.1%}
-.brass.tall::after{border-width:calc(370cqw/9.33) calc(360cqw/9.33) calc(260cqw/9.33) calc(310cqw/9.33);border-image:url(assets/brand/frame-brass-tall.webp) 370 360 260 310 fill stretch}
-.brass.tall::before{top:calc(68cqw/9.33);right:calc(70cqw/9.33);bottom:calc(68cqw/9.33);left:calc(76cqw/9.33);border-radius:calc(10cqw/9.33)}
+/* tall frames for the towers: Raven's tower frame, sliced so its corners never stretch */
+.brass.tall{padding:5.63% 5.6% 6% 5.5%}
+.brass.tall::after{border-width:calc(340cqw/14.56) calc(220cqw/14.56) calc(300cqw/14.56) calc(430cqw/14.56);border-image:url(assets/brand/frame-brass-tower.webp) 340 220 300 430 fill stretch}
+.brass.tall::before{top:calc(74cqw/14.56);right:calc(72cqw/14.56);bottom:calc(80cqw/14.56);left:calc(72cqw/14.56);border-radius:calc(10cqw/14.56)}
 .dos .ph.tall,.rec .ph.tall{aspect-ratio:3/4}
 .viewer .strip .brass.tall img{aspect-ratio:3/4}
-.lightbox .brass.tall{width:min(560px,100%)}
+.lightbox .brass.tall{width:min(560px,100%,calc(70vh * .8))}
 .dossiers{display:block;columns:3 330px;column-gap:20px}
 .dossiers .dos{width:100%;margin-bottom:20px;break-inside:avoid}
 .drawers{display:block;columns:5 230px;column-gap:14px}
 .drawers .rec{display:block;width:100%;margin-bottom:14px;break-inside:avoid}
 .drawers .rec[hidden]{display:none}
-.lightbox .brass{display:block;width:min(1000px,100%);margin:20px auto 0}.lightbox .brass img,.lightbox .brass video{margin:0;max-height:none;height:auto}
-.lightbox .brass.tall{width:min(560px,100%)}
+.lightbox .brass{display:block;width:min(1000px,100%);margin:20px auto 0}.lightbox .brass img,.lightbox .brass video{margin:0;max-height:none;height:auto;width:100%}
+.lightbox .brass.tall{width:min(560px,100%,calc(70vh * .8))}
 
 
 
@@ -969,7 +969,7 @@ function openDossier(w){
 dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
 
 /* marks */
-var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/black-diamond.webp','Black Diamond Spray In Bedliner · built to take more'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','Servando’s Mexicana · S mark'],['assets/brands/ip-mark.webp','Intuitive Products · makers of the Squeegee Evolved and the Rivet Sealer 3000'],['assets/brands/zenwalli-exchange.webp','Zenwalli Exchange®'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
+var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/black-diamond.webp','Black Diamond Spray In Bedliner · built to take more'],['assets/brands/leverage-property.webp','Leverage Property Solutions'],['assets/brands/leverage-homes.webp','Leverage Homes™'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','Servando’s Mexicana · S mark'],['assets/brands/ip-mark.webp','Intuitive Products · makers of the Squeegee Evolved and the Rivet Sealer 3000'],['assets/brands/zenwalli-exchange.webp','Zenwalli Exchange®'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
  ['assets/brands/hyper-ops-patch-clear.webp','HYPER OPS mission patch · NASA Artemis I'],['assets/brands/small-world-ko.webp','Small World Tours and Cruises, Inc.'],['assets/brands/spear-tech-ko.webp','Spear Tech · dimensional logo'],['assets/brands/hughes-laser-lab.webp','Hughes Laser Lab']];
 var mk=$('#marks');MARKS.forEach(function(m){var f=el('figure','reveal'+(m[2]?' '+m[2]:''),'<div class="m"><img data-src="'+m[0]+'" alt="'+esc(m[1])+'"></div><figcaption>'+esc(m[1])+'</figcaption>');mk.appendChild(f);rev(f);lazy(f.querySelector('img'))});
 
