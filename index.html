@@ -669,14 +669,14 @@ nav.addEventListener('click',function(e){if(e.target.closest('a')){nav.classList
 /* hero: the hall fades up, then the gold point walks the development path */
 
 /* behind the mark: the shop at work, each photo melting into the next as the reel drifts left */
-function reel(box){var vis=true;if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting}).observe(box);var R=['assets/brand/laser-lab.webp','assets/work/frogbox-airbrush.webp','assets/platforms/realm-grand.webp','assets/work/studio-shop.webp','assets/work/bludger-case-heat-aging.webp','assets/platforms/realm-hyperion.webp','assets/work/slimjim-wrap-install.webp','assets/work/mall-gears-install.webp','assets/work/ghost-cat-painting.webp','assets/work/kemperle-install.webp','assets/platforms/de-tree.webp','assets/work/wakoola-grill-sign.webp'],i=0,live=true,nextIm=null;
+function reel(box){var vis=true;if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting}).observe(box);var R=['assets/brand/laser-lab.webp','assets/work/frogbox-airbrush.webp','assets/platforms/realm-grand.webp','assets/work/bludger-case-heat-aging.webp','assets/platforms/realm-hyperion.webp','assets/work/slimjim-wrap-install.webp','assets/work/mall-gears-install.webp','assets/work/ghost-cat-painting.webp','assets/work/kemperle-install.webp','assets/platforms/de-tree.webp','assets/work/wakoola-grill-sign.webp'],i=0,live=true,nextIm=null;
   function load(k){var im=new Image();im.alt='';im.decoding='async';im.src=R[k%R.length];return im}
   function play(){if(!live||!document.body.contains(box))return;if(!vis||document.hidden){setTimeout(play,1000);return}var im=nextIm||load(i);nextIm=load(i+1);
     var go=function(){if(!live)return;box.appendChild(im);
-      var a=im.animate([{opacity:0,transform:'translateX(0) scale(1.07)',filter:'blur(14px) saturate(.6) brightness(.7)'},
-        {opacity:.85,transform:'translateX(-3%) scale(1.04)',filter:'blur(0) saturate(.8) brightness(.8)',offset:.3},
-        {opacity:.85,transform:'translateX(-7%) scale(1.03)',filter:'blur(0) saturate(.8) brightness(.8)',offset:.7},
-        {opacity:0,transform:'translateX(-10%) scale(1.07)',filter:'blur(14px) saturate(.6) brightness(.7)'}],{duration:6400,easing:'linear'});
+      var a=im.animate([{opacity:0,transform:'translateX(0) scale(1.07)',filter:'blur(14px) grayscale(1) brightness(.7)'},
+        {opacity:.85,transform:'translateX(-3%) scale(1.04)',filter:'blur(0) grayscale(1) brightness(.8)',offset:.3},
+        {opacity:.85,transform:'translateX(-7%) scale(1.03)',filter:'blur(0) grayscale(1) brightness(.8)',offset:.7},
+        {opacity:0,transform:'translateX(-10%) scale(1.07)',filter:'blur(14px) grayscale(1) brightness(.7)'}],{duration:6400,easing:'linear'});
       a.onfinish=function(){im.remove()};i++;setTimeout(play,3200)};
     if(im.complete&&im.naturalWidth)go();else{im.onload=go;im.onerror=function(){i++;play()}}}
   play();return function(){live=false}}
