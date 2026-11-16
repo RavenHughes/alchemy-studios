@@ -361,6 +361,7 @@ footer .legal a{text-decoration:none;border-bottom:1px solid var(--line)}
 .brass.tall::after{border-width:calc(340cqw/14.56) calc(220cqw/14.56) calc(300cqw/14.56) calc(430cqw/14.56);border-image:url(assets/brand/frame-brass-tower.webp) 340 220 300 430 fill stretch}
 .brass.tall::before{top:calc(74cqw/14.56);right:calc(72cqw/14.56);bottom:calc(80cqw/14.56);left:calc(72cqw/14.56);border-radius:calc(10cqw/14.56)}
 .dos .ph.tall,.rec .ph.tall{aspect-ratio:3/4}
+.dos .ph.logo img{object-fit:contain;padding:12% 10%;filter:none!important;transform:none!important;background:radial-gradient(70% 70% at 50% 50%,#161818,#060707)}
 .viewer .strip .brass.tall img{aspect-ratio:3/4}
 .lightbox .brass.tall{width:min(560px,100%,calc(70vh * .8))}
 .dossiers{display:block;columns:3 330px;column-gap:20px}
@@ -929,30 +930,38 @@ var WORKS=[
   development:'An original carved-oak family tree, a shared Hall of Records, hints scored for every kind of evidence, and trees that leave whole in any open format.',
   final:'In development.',
   strip:[['assets/platforms/de-hints.webp','Every hint, scored'],['assets/platforms/de-export.webp','Leaves whole, in any open format']]},
- {code:'A-004',name:'Chocolate Frog box',disc:'Engineering · Experience development',status:'Delivered · 2013',img:'assets/work/frogbox-lit.webp',
+ {code:'A-004',name:'FlashFunded',disc:'Digital development · Brand systems',status:'Soon to be deployed',img:'assets/brands/flashfunded.webp',logo:1,
+  objective:'A home-equity platform that helps homeowners keep, sell, stage or renovate their homes.',
+  development:'Brand, platform and website designed and built by Alchemy Studios.',
+  final:'Soon to be deployed.'},
+{code:'A-005',name:'Grace Reintegration Services',disc:'Digital development · Brand systems',status:'Soon to be deployed',img:'assets/brands/grace.webp',logo:1,
+  objective:'A 501(c)(3) helping veterans find homes.',
+  development:'Brand, donation platform and website designed and built by Alchemy Studios.',
+  final:'Soon to be deployed.'},
+{code:'A-006',name:'Chocolate Frog box',disc:'Engineering · Experience development',status:'Delivered · 2013',img:'assets/work/frogbox-lit.webp',
   objective:'An animated Chocolate Frog box for The Wizarding World of Harry Potter: the lid opens and the frog rises.',
   development:'Sculpted frog, hammered gold panels, airbrushed lid, and a lift mechanism in the tray.',
   final:'Finished and lit for Diagon Alley, and reviewed by Universal Studios Japan.',proj:'Chocolate Frog box'},
- {code:'A-005',name:'Bludgers and case',disc:'Industrial design · Material development',status:'Delivered',img:'assets/work/bludger-case-closed.webp',
+ {code:'A-007',name:'Bludgers and case',disc:'Industrial design · Material development',status:'Delivered',img:'assets/work/bludger-case-closed.webp',
   objective:'Bludger props and their case for The Wizarding World of Harry Potter.',
   development:'Bludgers sculpted, cast and aged with hammered texture and rust patina; a case with a hand-painted diamond lattice, heraldry, crackle finishes and forged strap hinges over a hidden mechanism.',
   final:'Delivered for Diagon Alley.',proj:'Bludgers and case'},
- {code:'A-006',name:'The Ghost Cat',disc:'Industrial design · Material development',status:'Delivered',img:'assets/work/ghost-cat.webp',
+ {code:'A-008',name:'The Ghost Cat',disc:'Industrial design · Material development',status:'Delivered',img:'assets/work/ghost-cat.webp',
   objective:'A tape-measure cat sculpture for Diagon Alley.',development:'Each tape measure painted, numbered and aged by hand.',final:'Delivered for Diagon Alley.',proj:'The Ghost Cat'},
- {code:'A-007',tall:1,name:'Leon Air compass rose',disc:'Material development',status:'Delivered',img:'assets/work/hangar-compass.webp',
+ {code:'A-009',tall:1,name:'Leon Air compass rose',disc:'Material development',status:'Delivered',img:'assets/work/hangar-compass.webp',
   objective:'A compass rose for the floor of the Leon Air hangar in Ocala, Florida.',development:'Fabricated in steel and epoxy at 34 feet across.',final:'Installed in the hangar.'},
- {code:'A-008',tall:1,name:'Samsung X Games',disc:'Engineering · Experience development',status:'Delivered',img:'assets/work/samsung-charging-tower.webp',
+ {code:'A-010',tall:1,name:'Samsung X Games',disc:'Engineering · Experience development',status:'Delivered',img:'assets/work/samsung-charging-tower.webp',
   objective:'A Samsung Galaxy S mobile charging tower and climbing walls with AT&T for the X Games in Los Angeles.',development:'Structure, climbing surfaces and branding built in the shop.',final:'Delivered to the X Games, Los Angeles.',proj:'Samsung X Games'},
- {code:'A-009',tall:1,name:'Slim Jim at Daytona',disc:'Experience development · Brand systems',status:'Delivered',img:'assets/work/slimjim-daytona.webp',
+ {code:'A-011',tall:1,name:'Slim Jim at Daytona',disc:'Experience development · Brand systems',status:'Delivered',img:'assets/work/slimjim-daytona.webp',
   objective:'A Slim Jim tower, trailer and display stage for ConAgra Foods at the Daytona 500.',development:'Stage trailer and giant product prop, wrapped and heat-formed in the shop.',final:'Delivered to the Daytona 500.',proj:'Slim Jim'},
- {code:'A-010',tall:1,name:'Egyptian climbing wall',disc:'Industrial design · Experience development',status:'Delivered',img:'assets/work/egyptian-rockwall.webp',
+ {code:'A-012',tall:1,name:'Egyptian climbing wall',disc:'Industrial design · Experience development',status:'Delivered',img:'assets/work/egyptian-rockwall.webp',
   objective:'A 27-foot Egyptian relief climbing wall after Pharaoh Khufu\'s tomb, for Loveland Laser Tag in Colorado.',development:'Relief sculpted and finished as a working climbing surface.',final:'Delivered to Loveland, Colorado.'},
- {code:'A-011',name:'Graffix Tools',disc:'Industrial design · Prototyping',status:'Product line',img:'assets/work/graffix-se360.webp',strip:[['assets/work/graffix-se360.webp','The SE360: one wrap, tinting and restyling tool, six blade packs']],
+ {code:'A-013',name:'Graffix Tools',disc:'Industrial design · Prototyping',status:'Product line',img:'assets/work/graffix-se360.webp',strip:[['assets/work/graffix-se360.webp','The SE360: one wrap, tinting and restyling tool, six blade packs']],
   objective:'Installation tools for the sign and vehicle-wrap trade, including the Rivet Sealer 3000 and SE360.',development:'Designed and built by an installer, for installers.',final:'A product line. <a href="https://graffixtools.com" target="_blank" rel="noopener">graffixtools.com</a>'}];
 var dos=$('#dossiers'),dlg=$('#dlg'),dlgB=$('#dlgBody');
 WORKS.forEach(function(w){var b=el('button','dos reveal');b.type='button';
   b.innerHTML='<div class="tab"><b>'+w.code+'</b><span class="mono">Development record</span></div>'+
-   '<div class="ph brass'+(w.tall?' tall':'')+'">'+(w.img?'<img data-src="'+w.img+'" alt="'+esc(w.name)+'" width="1600" height="1000">':'<div style="height:100%;display:grid;place-items:center;color:var(--brass)"><img src="assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="180" height="122" style="opacity:.8"></div>')+'</div>'+
+   '<div class="ph brass'+(w.tall?' tall':'')+(w.logo?' logo':'')+'">'+(w.img?'<img data-src="'+w.img+'" alt="'+esc(w.name)+'" width="1600" height="1000">':'<div style="height:100%;display:grid;place-items:center;color:var(--brass)"><img src="assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="180" height="122" style="opacity:.8"></div>')+'</div>'+
    '<span class="stamp">'+w.status+'</span>'+
    '<div class="meta"><span class="mono">Project</span><strong>'+w.name+'</strong><span class="mono">Discipline</span><span>'+w.disc+'</span><span class="mono">Status</span><span>'+w.status+'</span></div>';
   b.addEventListener('click',function(){openDossier(w)});dos.appendChild(b);rev(b);var im=b.querySelector('img');if(im)lazy(im)});
@@ -966,7 +975,7 @@ function openDossier(w){
 dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
 
 /* marks */
-var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/black-diamond.webp','Black Diamond Spray In Bedliner · built to take more'],['assets/brands/leverage-property.webp','Leverage Property Solutions'],['assets/brands/leverage-homes.webp','Leverage Homes™'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','Servando’s Mexicana · S mark'],['assets/brands/ip-mark.webp','Intuitive Products · makers of the Squeegee Evolved and the Rivet Sealer 3000'],['assets/brands/zenwalli-exchange.webp','Zenwalli Exchange®'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
+var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/black-diamond.webp','Black Diamond Spray In Bedliner · built to take more'],['assets/brands/leverage-property.webp','Leverage Property Solutions'],['assets/brands/leverage-homes.webp','Leverage Homes™'],['assets/brands/flashfunded.webp','FlashFunded · soon to be deployed'],['assets/brands/grace.webp','Grace Reintegration Services · soon to be deployed'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','Servando’s Mexicana · S mark'],['assets/brands/ip-mark.webp','Intuitive Products · makers of the Squeegee Evolved and the Rivet Sealer 3000'],['assets/brands/zenwalli-exchange.webp','Zenwalli Exchange®'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
  ['assets/brands/hyper-ops-patch-clear.webp','HYPER OPS mission patch · NASA Artemis I'],['assets/brands/small-world-ko.webp','Small World Tours and Cruises, Inc.'],['assets/brands/spear-tech-ko.webp','Spear Tech · dimensional logo'],['assets/brands/hughes-laser-lab.webp','Hughes Laser Lab']];
 var mk=$('#marks');MARKS.forEach(function(m){var f=el('figure','reveal'+(m[2]?' '+m[2]:''),'<div class="m"><img data-src="'+m[0]+'" alt="'+esc(m[1])+'"></div><figcaption>'+esc(m[1])+'</figcaption>');mk.appendChild(f);rev(f);lazy(f.querySelector('img'))});
 
