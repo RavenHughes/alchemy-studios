@@ -1,0 +1,2 @@
+Cormorant Garamond, Cormorant SC (The Cormorant Project Authors), Barlow Condensed (Jeremy Tribby), IBM Plex Mono (IBM Corp.)
+All licensed under the SIL Open Font License 1.1: https://openfontlicense.org
