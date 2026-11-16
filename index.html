@@ -812,6 +812,8 @@ var W=[
  ['hangar-compass','space','34-foot steel and epoxy compass rose for the Leon Air hangar, Ocala, Florida',1300,1682],
  ['acguys-van','fleet','Full van wrap for AC Guys Cooling and Heating Services',1600,1200],
  ['acguys-van-side','fleet','AC Guys van wrap, driver side, with the diamond-plate lower panels',1600,1200],
+ ['troys-plumbing-van','fleet','Full Sprinter van wrap for Troy\'s Plumbing, mascot, flag and diamond-plate logo',1600,1200],
+ ['troys-plumbing-install','fleet','Installing the Troy\'s Plumbing wrap on the rear doors',1600,1200],
  ['kemperle-sprinter','fleet','Full Sprinter van wrap for Albert Kemperle of Florida',1600,1195],
  ['kemperle-lettering','fleet','Applying cut-vinyl lettering over the printed Kemperle wrap',1600,1195],
  ['kemperle-rear','fleet','Kemperle Sprinter wrap carried around the rear doors',1600,1195],
@@ -836,7 +838,7 @@ var DISC={park:'Theme parks',build:'Themed builds',fleet:'Fleet graphics',marine
 function project(c){c=c.toLowerCase();
   if(/bludger/.test(c))return 'Bludgers and case';if(/chocolate frog|frog box/.test(c))return 'Chocolate Frog box';if(/ghost cat/.test(c))return 'The Ghost Cat';
   if(/slim jim/.test(c))return 'Slim Jim';if(/samsung/.test(c))return 'Samsung X Games';if(/kemperle/.test(c))return 'Kemperle of Florida';
-  if(/ac guys/.test(c))return 'AC Guys';if(/gt marine/.test(c))return 'GT Marine';if(/servando/.test(c))return 'Servando\'s';
+  if(/ac guys/.test(c))return 'AC Guys';if(/troy/.test(c))return 'Troy\'s Plumbing';if(/gt marine/.test(c))return 'GT Marine';if(/servando/.test(c))return 'Servando\'s';
   if(/gear installation/.test(c))return 'Clockwork gears';if(/mardi gras/.test(c))return 'Daytona Mardi Gras';if(/climbing wall|rock wall/.test(c))return 'Climbing walls';
   if(/zipline/.test(c))return 'Zipline towers';return 'Single commissions'}
 function material(c){c=c.toLowerCase();
@@ -900,7 +902,7 @@ function openDossier(w){
 dlg.addEventListener('click',function(e){if(e.target===dlg)dlg.close()});
 
 /* marks */
-var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','S mark · Auténtico Mexicano'],['assets/brands/ip-mark.webp','iP mark'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
+var MARKS=[['assets/brand/alchemy-logo-2027-720.webp','Alchemy Studios · Development House'],['assets/brands/7-plastics.webp','7 Plastics, Inc. · injection molding, prototypes, CAD'],['assets/brands/regency-hills.webp','Regency Hills Luxury Estates','light'],['assets/brands/regency-shield.webp','Regency · shield mark','light'],['assets/brands/regency-villas.webp','Regency Villas','light'],['assets/brands/s-mark.webp','Servando’s Mexicana · S mark'],['assets/brands/ip-mark.webp','Intuitive Products · makers of the Squeegee Evolved and the Rivet Sealer 3000'],['assets/brands/zenwalli-exchange.webp','Zenwalli Exchange®'],['assets/brands/john-nemahtallah-signature.webp','John Nemahtallah · signature mark'],['assets/brands/tsc-man.webp','TSC Man · character mascot, 2018'],['assets/brand/realm-sigil.webp','The Realm® sigil'],['assets/brand/apex-logo.webp','Apex Passport Card'],['assets/brands/digital-epitaph-stacked.webp','Digital Epitaph'],
  ['assets/brands/hyper-ops-patch.webp','HYPER OPS mission patch · NASA Artemis I'],['assets/brands/small-world.webp','Small World Tours and Cruises, Inc.'],['assets/brands/spear-tech.webp','Spear Tech · dimensional logo'],['assets/brands/hughes-laser-lab.webp','Hughes Laser Lab']];
 var mk=$('#marks');MARKS.forEach(function(m){var f=el('figure','reveal'+(m[2]?' '+m[2]:''),'<div class="m"><img data-src="'+m[0]+'" alt="'+esc(m[1])+'"></div><figcaption>'+esc(m[1])+'</figcaption>');mk.appendChild(f);rev(f);lazy(f.querySelector('img'))});
 
