@@ -1,9 +1,11 @@
-# Always check for a new page, so updates show up right away; images can be cached for a week
+# Pages: always check for a new version, so updates show up right away.
+# Everything else (images, fonts, styles, scripts, video): cached for a week,
+# so a returning visitor's browser asks the server for almost nothing.
 <IfModule mod_headers.c>
   <FilesMatch "\.(html)$">
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
-  <FilesMatch "\.(webp|png|jpg|svg)$">
+  <FilesMatch "\.(webp|png|jpg|jpeg|gif|svg|ico|woff2|woff|css|js|mp4)$">
     Header set Cache-Control "public, max-age=604800"
   </FilesMatch>
 </IfModule>
