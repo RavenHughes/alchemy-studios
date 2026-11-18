@@ -1,3 +1,9 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Not a WordPress site: refuse WordPress login, xmlrpc and admin probes instantly (bots)
+RewriteRule ^(wp-login\.php|xmlrpc\.php|wp-admin|wp-includes|wp-content|wp-json|wp-config\.php|wp-cron\.php|wp-signup\.php|wp-trackback\.php)(/|$) - [F,L]
+</IfModule>
+
 # Pages: always check for a new version, so updates show up right away.
 # Everything else (images, fonts, styles, scripts, video): cached for a week,
 # so a returning visitor's browser asks the server for almost nothing.
