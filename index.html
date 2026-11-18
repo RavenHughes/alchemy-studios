@@ -71,6 +71,12 @@ section{position:relative}
 .reg.tl{top:14px;left:14px}.reg.tr{top:14px;right:14px}.reg.bl{bottom:14px;left:14px}.reg.br{bottom:14px;right:14px}
 
 /* header */
+.soc{display:flex;gap:14px;align-items:center;justify-content:center}
+.soc a{display:block;border-radius:50%;transition:transform .5s ease,filter .5s ease;filter:drop-shadow(0 2px 2px rgba(0,0,0,.8))}
+.soc a:hover{transform:rotate(-12deg) scale(1.06);filter:drop-shadow(0 0 8px rgba(227,190,104,.45))}
+.soc img{display:block;width:var(--soc,40px);height:var(--soc,40px)}
+.bar .soc{--soc:34px}
+footer .soc{--soc:48px;margin:26px 0 8px}
 header.bar{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .6s ease}
 header.bar.solid{background:rgba(8,9,9,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bar .row{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:20px var(--pad) 16px}
@@ -454,6 +460,7 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
       <a href="#studio">Studio</a><a href="#capabilities">Capabilities</a><a href="#lab">Lab</a><a href="#works">Projects</a><a href="#process">Process</a><a href="#archive">Archive</a>
     </nav>
     <div style="display:flex;gap:18px;align-items:center">
+      <div class="soc"><a href="mailto:info@alchemystudiosorlando.com" aria-label="Email Alchemy Studios"><img src="assets/social/email.webp" alt="" width="192" height="192"></a></div>
       <button class="menu-btn" aria-expanded="false" aria-controls="nav">Menu</button>
       <a class="cta ghost top" href="#begin">Begin a project</a>
     </div>
@@ -708,6 +715,8 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
   <div class="fbar"><span class="eng">Alchemy Studios<small>Development house</small></span><span class="eng r">A more<br>extraordinary<br>tomorrow</span></div>
   <div class="lockup" id="footLogo" role="img" aria-label="Alchemy Studios, Development House"></div>
   <div class="ds">Design • Development • Engineering • Prototyping</div>
+  <!-- Social portholes ready in assets/social/ (instagram, facebook, linkedin, youtube, x, pinterest, tiktok): add a link here when an account exists -->
+  <div class="soc"><a href="mailto:info@alchemystudiosorlando.com" aria-label="Email Alchemy Studios"><img src="assets/social/email.webp" alt="" width="192" height="192"></a></div>
   <div class="gr"></div>
     <p class="legal mono" style="max-width:none">© 2026 Alchemy Studios, LLC · A ZenChip PRIME company · The Realm® is a registered trademark. Client marks belong to their owners.</p>
 </footer>
