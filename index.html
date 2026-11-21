@@ -187,6 +187,33 @@ header.bar.solid{background:rgba(8,9,9,.92);backdrop-filter:blur(10px);-webkit-b
 #lab{background:linear-gradient(180deg,var(--black),#0a0b0b 30%,#0a0b0b 70%,var(--black))}
 .labstage{position:relative;margin-top:60px;border:1px solid var(--line);background:radial-gradient(70% 90% at 50% 100%,rgba(196,154,69,.06),transparent 70%),#090a0a;overflow:hidden}
 .labstage svg{display:block;width:100%;height:auto}
+/* the six workstations: Raven's lab panels, each under a hanging brass Edison bulb */
+.labrow{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(6px,1.2vw,18px);padding:0 clamp(10px,2vw,28px) clamp(18px,2.4vw,34px)}
+.lp{position:relative;display:block;padding:0;border:0;background:none;cursor:pointer;color:inherit;text-align:center;outline:none}
+.lp .hang{position:relative;display:block;height:clamp(90px,11vw,150px);pointer-events:none}
+.lp .hang svg{position:absolute;left:50%;top:0;height:100%;width:auto;transform:translateX(-50%);overflow:visible}
+.lp .bulb-glass{fill:rgba(255,214,150,.10);stroke:rgba(214,170,96,.55);stroke-width:.8;transition:fill 1s}
+.lp .fil{fill:none;stroke:#b0702a;stroke-width:1;transition:stroke 1s,filter 1s}
+.lp .halo{opacity:.18;transition:opacity 1.1s}
+.lp .beam{display:block;position:absolute;left:50%;top:clamp(80px,10vw,136px);width:150%;height:115%;transform:translateX(-50%);pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse 48% 62% at 50% 0,rgba(255,206,128,.55),rgba(255,190,100,.16) 45%,transparent 74%);mix-blend-mode:screen;opacity:.18;transition:opacity 1.2s}
+.lp .pnl{position:relative;display:block;filter:brightness(.62) saturate(.8);transition:filter 1.2s,transform .6s}
+.lp .pnl img{display:block;width:100%;height:auto}
+.lp .pnl b{position:absolute;left:13%;right:13%;top:87.9%;height:6.4%;display:flex;align-items:center;justify-content:center;
+  font:400 clamp(6px,.62vw,9.5px) var(--eng);letter-spacing:.07em;text-transform:uppercase;color:rgba(232,223,201,.75);white-space:nowrap;overflow:hidden}
+.lp .pnl i{position:absolute;left:0;right:0;top:81.5%;font:300 clamp(6px,.6vw,9px) var(--mono);letter-spacing:.2em;color:rgba(196,154,69,.7);font-style:normal}
+.lp:hover .pnl,.lp:focus-visible .pnl{filter:brightness(.85) saturate(.9)}
+.lp.on .pnl{filter:none;transform:translateY(-3px)}
+.lp.on .pnl b{color:var(--bright)}
+.lp.on .beam{opacity:1}
+.lp.on .halo{opacity:1}
+.lp.on .bulb-glass{fill:rgba(255,224,170,.55)}
+.lp.on .hang svg{filter:drop-shadow(0 0 10px rgba(255,190,100,.7))}
+.lp.on .fil{stroke:#ffe2a8;filter:drop-shadow(0 0 3px #ffb347)}
+@media (prefers-reduced-motion:no-preference){.lp.on .fil{animation:flick 4.5s infinite}@keyframes flick{0%,100%{opacity:1}47%{opacity:1}48%{opacity:.82}49%{opacity:1}73%{opacity:.93}74%{opacity:1}}
+  .lp .hang svg{transform-origin:50% 0;animation:sway 7s ease-in-out infinite}.lp:nth-child(2n) .hang svg{animation-delay:-3.5s}@keyframes sway{0%,100%{transform:translateX(-50%) rotate(.8deg)}50%{transform:translateX(-50%) rotate(-.8deg)}}}
+@media (max-width:860px){.labrow{grid-template-columns:repeat(3,1fr);row-gap:10px}.lp .pnl b{font-size:9px;letter-spacing:.1em}}
+@media (max-width:480px){.labrow{grid-template-columns:repeat(2,1fr)}}
 .labstage .st{cursor:pointer;outline:none}
 .labstage .st .ln{stroke:rgba(232,223,201,.42);stroke-width:1.1;fill:none;transition:stroke 1s}
 .labstage .st .fl{fill:rgba(232,223,201,.04);stroke:none;transition:fill 1s}
@@ -547,19 +574,7 @@ footer .lockup{width:min(300px,70vw);margin:0 auto}
     <div class="head ticks"><div class="num">03</div><div><span class="k mono">The development lab · AS / 03</span><h2>Invention requires<br>somewhere to happen.</h2></div></div>
     <div class="labstage reveal">
       <span class="reg tl"></span><span class="reg tr"></span>
-      <svg viewBox="0 0 1200 520" id="labsvg" role="group" aria-label="The development lab: choose a workstation">
-        <defs>
-          <linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3BE68" stop-opacity=".32"/><stop offset="1" stop-color="#E3BE68" stop-opacity="0"/></linearGradient>
-        </defs>
-        <g class="room">
-          <line x1="0" y1="440" x2="1200" y2="440"/><line x1="0" y1="60" x2="1200" y2="60"/>
-        </g>
-        <g class="room2">
-          <line x1="0" y1="470" x2="1200" y2="470"/><line x1="0" y1="500" x2="1200" y2="500"/>
-          <line x1="200" y1="60" x2="200" y2="440"/><line x1="400" y1="60" x2="400" y2="440"/><line x1="600" y1="60" x2="600" y2="440"/><line x1="800" y1="60" x2="800" y2="440"/><line x1="1000" y1="60" x2="1000" y2="440"/>
-        </g>
-        <g class="notes"><text x="12" y="48">LAB ELEVATION · AS / 03 · SCALE 1:50</text><text x="1050" y="48">REV.03</text></g>
-      </svg>
+      <div class="labrow" id="labrow" role="group" aria-label="The development lab: choose a workstation"></div>
       <span class="reg bl"></span><span class="reg br"></span>
     </div>
     <div class="bench-plate" id="benchplate" aria-live="polite">
@@ -843,26 +858,11 @@ var LAB=[
  {id:'elec',name:'Electronics station',x:700,text:'Electronic and embedded product development, from contactless card tech to animated show props.',list:['Embedded','NFC and chips','Show control','Laser systems'],img:'card-gold-member',dir:'platforms',cap:'Apex Passport Card, Fanbase Gold Member'},
  {id:'dig',name:'Digital lab',x:900,text:'Interface and software development: platforms, payments, member systems and persistent worlds in Unreal Engine.',list:['Platforms','Payments','Interfaces','Virtual worlds'],img:'realm-grand',dir:'platforms',cap:'Grand Island, The Realm®'},
  {id:'proto',name:'Prototype shop',x:1100,text:'Fabrication and physical proof-of-concept development: the place an idea has to stand up for itself.',list:['Fabrication','Casting','Molding','First article'],img:'bludgers-pair',cap:'Bludger props, sculpted, cast and aged'}];
-var svg=$('#labsvg'),NS='http://www.w3.org/2000/svg';
-function S(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e}
-var FURN={
- design:'M40 440 L60 300 L160 260 L170 270 L72 310 L60 440 M60 300 L160 260 M110 280 L120 440 M150 300 L150 440 M120 330 L150 330',
- eng:'M220 440 L220 330 L380 330 L380 440 M220 345 L380 345 M240 330 L240 300 L270 300 L270 330 M250 300 L250 285 M330 330 L330 312 L360 312 L360 330 M230 400 L370 400',
- mat:'M430 440 L430 170 L570 170 L570 440 M430 230 L570 230 M430 290 L570 290 M430 350 L570 350 M445 230 L445 210 L470 210 L470 230 M490 290 L490 262 L520 262 L520 290 M450 350 L465 322 L480 350 M520 350 L520 330 L556 330 L556 350',
- elec:'M620 440 L620 340 L780 340 L780 440 M620 352 L780 352 M640 340 L640 270 L720 270 L720 340 M650 282 L710 282 L710 326 L650 326 Z M652 312 Q665 292 680 306 T708 300 M740 340 L740 300 L770 300 L770 340',
- dig:'M820 440 L820 345 L980 345 L980 440 M820 357 L980 357 M832 345 L832 255 L898 255 L898 330 L832 330 M904 345 L904 255 L970 255 L970 330 L904 330 M865 330 L865 345 M937 330 L937 345',
- proto:'M1030 440 L1030 250 L1170 250 L1170 440 M1030 280 L1170 280 M1060 280 L1060 380 L1140 380 L1140 280 M1100 280 L1100 320 M1090 320 L1110 320 L1100 334 Z M1048 410 L1152 410'};
-var stEls=[];
-LAB.forEach(function(s,i){var g=S('g',{class:'st',tabindex:'0',role:'button','aria-label':s.name});
-  g.appendChild(S('path',{class:'cone',d:'M'+(s.x-14)+' 96 L'+(s.x-110)+' 440 L'+(s.x+110)+' 440 L'+(s.x+14)+' 96 Z'}));
-  g.appendChild(S('line',{class:'ln',x1:s.x,y1:60,x2:s.x,y2:88}));
-  g.appendChild(S('path',{class:'lamp',d:'M'+(s.x-16)+' 98 L'+(s.x-8)+' 86 L'+(s.x+8)+' 86 L'+(s.x+16)+' 98 Z'}));
-  var f=S('path',{class:'ln',d:FURN[s.id]});g.appendChild(f);
-  g.appendChild(S('rect',{class:'fl',x:s.x-96,y:110,width:192,height:330}));
-  var t=S('text',{x:s.x,y:470,'text-anchor':'middle'});t.textContent=s.name.toUpperCase();g.appendChild(t);
-  var n=S('text',{x:s.x,y:490,'text-anchor':'middle',style:'font:300 9px var(--mono);letter-spacing:.14em'});n.textContent='ST.'+('0'+(i+1)).slice(-2);g.appendChild(n);
-  g.addEventListener('click',function(){pick(i)});g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(i)}});
-  svg.appendChild(g);stEls.push(g)});
+var labrow=$('#labrow'),stEls=[];
+LAB.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.className='lp';b.setAttribute('aria-label',s.name);
+  b.innerHTML='<span class="hang"><svg viewBox=\'0 0 60 150\' aria-hidden=\'true\'><defs><radialGradient id=\'hl'+i+'\' cx=\'50%\' cy=\'50%\' r=\'50%\'><stop offset=\'0\' stop-color=\'#ffd590\' stop-opacity=\'.75\'/><stop offset=\'1\' stop-color=\'#ffb347\' stop-opacity=\'0\'/></radialGradient><linearGradient id=\'br'+i+'\' x1=\'0\' x2=\'1\'><stop offset=\'0\' stop-color=\'#5a4220\'/><stop offset=\'.45\' stop-color=\'#d9b46a\'/><stop offset=\'.7\' stop-color=\'#9a7536\'/><stop offset=\'1\' stop-color=\'#4a3518\'/></linearGradient></defs><circle class=\'halo\' cx=\'30\' cy=\'118\' r=\'34\' fill=\'url(#hl'+i+')\'/><line x1=\'30\' y1=\'0\' x2=\'30\' y2=\'62\' stroke=\'#1c1a17\' stroke-width=\'2\'/><line x1=\'30\' y1=\'0\' x2=\'30\' y2=\'62\' stroke=\'rgba(196,154,69,.35)\' stroke-width=\'.6\'/><rect x=\'26\' y=\'60\' width=\'8\' height=\'6\' rx=\'1\' fill=\'url(#br'+i+')\'/><path d=\'M22 66 L38 66 L40 74 L20 74 Z\' fill=\'url(#br'+i+')\'/><rect x=\'19\' y=\'74\' width=\'22\' height=\'16\' rx=\'2\' fill=\'url(#br'+i+')\'/><g stroke=\'#3b2b13\' stroke-width=\'.8\'><line x1=\'19\' y1=\'78\' x2=\'41\' y2=\'78\'/><line x1=\'19\' y1=\'82\' x2=\'41\' y2=\'82\'/><line x1=\'19\' y1=\'86\' x2=\'41\' y2=\'86\'/></g><circle cx=\'21.5\' cy=\'76\' r=\'.9\' fill=\'#f1d896\'/><circle cx=\'38.5\' cy=\'76\' r=\'.9\' fill=\'#f1d896\'/><path d=\'M22 90 L38 90 L37 94 L23 94 Z\' fill=\'#6b4f24\'/><path class=\'bulb-glass\' d=\'M24 94 C14 104 13 120 18 130 C22 139 26 143 30 145 C34 143 38 139 42 130 C47 120 46 104 36 94 Z\'/><path class=\'fil\' d=\'M27 95 L27 104 M33 95 L33 104 M27 104 L24 120 L28 112 L30 124 L32 112 L36 120 L33 104\'/><path d=\'M20 112 C20 106 22 101 25 98\' fill=\'none\' stroke=\'rgba(255,255,255,.28)\' stroke-width=\'1.2\' stroke-linecap=\'round\'/></svg></span><span class="beam"></span>'+
+    '<span class="pnl"><img src="assets/lab/station-'+(i+1)+'.webp" alt="" width="254" height="518" loading="lazy"><i>ST.'+('0'+(i+1)).slice(-2)+'</i><b>'+s.name+'</b></span>';
+  b.addEventListener('click',function(){pick(i)});labrow.appendChild(b);stEls.push(b)});
 var bpImg=$('#bpImg');
 function pick(i){var s=LAB[i];stEls.forEach(function(g,j){g.classList.toggle('on',j===i);g.setAttribute('aria-pressed',j===i)});
   $('#bpCode').textContent='Station '+('0'+(i+1)).slice(-2)+' · AS / LAB';$('#bpName').textContent=s.name;$('#bpText').textContent=s.text;
