@@ -17,6 +17,8 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Organization","name":"Alchemy Studios, LLC","legalName":"ALCHEMY STUDIOS LLC","foundingDate":"2015-09-22","address":{"@type":"PostalAddress","addressLocality":"Orlando","addressRegion":"FL","addressCountry":"US"},"parentOrganization":{"@type":"Organization","name":"ZenChip PRIME Corp."},"founder":{"@type":"Person","name":"J. Daniel Hughes"},"identifier":"Florida Division of Corporations document no. L15000160768","logo":"assets/brand/alchemy-logo-2027.webp"}
 </script>
+<script>/* any photo the host refuses (too many requests at once) tries again, up to five times, a little later each time */
+document.addEventListener('error',function(e){var im=e.target;if(!im||im.tagName!=='IMG'||im.dataset.src)return;var n=+(im.dataset.r||0);if(n>=5)return;im.dataset.r=n+1;var s=(im.getAttribute('src')||'').replace(/([?&])r=\d+$/,'');if(!s)return;setTimeout(function(){im.src=s+(s.indexOf('?')<0?'?':'&')+'r='+(n+1)},1500*(n+1))},true);</script>
 <style>
 @font-face{font-family:'Cormorant Garamond';font-weight:400;font-style:normal;font-display:swap;src:url(assets/fonts/cormorant-garamond-latin-400-normal.woff2) format('woff2')}
 @font-face{font-family:'Cormorant Garamond';font-weight:500;font-style:normal;font-display:swap;src:url(assets/fonts/cormorant-garamond-latin-500-normal.woff2) format('woff2')}
@@ -771,7 +773,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;
 var Q=[],busy=0;
 function pump(){while(busy<3&&Q.length){(function(im){busy++;var done=false,fin=function(){if(done)return;done=true;clearTimeout(t);busy--;pump()},t=setTimeout(fin,12000);
   im.addEventListener('load',function(){im.classList.add('ok');fin()},{once:true});
-  im.addEventListener('error',function(){fin();if(!im.dataset.retry){im.dataset.retry=1;setTimeout(function(){Q.push(im);pump()},2500)}},{once:true});
+  im.addEventListener('error',function(){fin();var n=+(im.dataset.retry||0);if(n<5){im.dataset.retry=n+1;setTimeout(function(){im.dataset.src=im.dataset.src.replace(/([?&])r=\d+$/,'');im.dataset.src+=(im.dataset.src.indexOf('?')<0?'?':'&')+'r='+(n+1);Q.push(im);pump()},2000*(n+1))}},{once:true});
   im.src=im.dataset.src})(Q.shift())}}
 var lazyIO='IntersectionObserver' in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){lazyIO.unobserve(e.target);Q.push(e.target);pump()}})},{rootMargin:'600px 0px'}):null;
 function lazy(im){if(lazyIO)lazyIO.observe(im);else{Q.push(im);pump()}}
