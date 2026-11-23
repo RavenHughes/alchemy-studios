@@ -73,8 +73,8 @@ function AlchemyLogo(root,o){
     /* 7 the hinge drops onto the pivot, turning */
     at(5200,function(){an('hinge',[{opacity:0,transform:'translateY(-60%) rotate(-160deg)'},{opacity:1,transform:'translateY(3%) rotate(6deg)',offset:.78},{transform:'none'}],{duration:800})});
     at(5950,function(){braze(627,108,48)});
-    /* 8 the knob is screwed in */
-    at(6000,function(){an('knob',[{opacity:0,transform:'scale(1.6) rotate(-540deg)'},{opacity:1,transform:'scale(1) rotate(0)'}],{duration:850,easing:'cubic-bezier(.3,.7,.3,1)'})});
+    /* 8 the nut spins up off the protractor toward the viewer, then settles */
+    at(6000,function(){an('knob',[{opacity:0,transform:'scale(.45) rotate(-540deg)'},{opacity:1,transform:'scale(1.18) rotate(-30deg)',offset:.75},{transform:'scale(1) rotate(0)'}],{duration:950,easing:'cubic-bezier(.3,.7,.3,1)'})});
     at(6800,function(){braze(390,463,22)});
     /* 9 the sphere: the transformation point is lit */
     at(6900,function(){an('sphere',[{opacity:0,transform:'scale(.2)',filter:'brightness(4)'},{opacity:1,transform:'scale(1.08)',filter:'brightness(2.2)',offset:.6},{transform:'scale(1)',filter:'brightness(1)'}],{duration:1100});braze(627,452,60)});
