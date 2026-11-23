@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 const TO = 'ravenhughes@proton.me';
-const FROM = 'noreply@alchemystudiosorlando.com';
+const FROM = 'raven@alchemystudiosorlando.com';   // the studio mailbox the server sends through
 
 function out(int $code, array $body): void { http_response_code($code); echo json_encode($body); exit; }
 
