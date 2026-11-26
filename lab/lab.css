@@ -62,3 +62,24 @@ input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{out
 .meta{color:var(--mist);font-size:13px;text-transform:uppercase;margin-top:30px}
 .danger{margin-top:8px}.danger button{color:#e38a7a;border-color:rgba(227,138,122,.3)}
 @media (max-width:600px){.mark small{display:none}.card{align-items:flex-start}}
+/* Ad Lab */
+.optics{list-style:none;padding:0;margin:0;display:grid;gap:6px;max-width:820px}
+.optics li{display:flex;gap:10px;align-items:baseline;padding:8px 12px;background:var(--panel);border:1px solid var(--hair)}
+.optics li span{font-family:"Barlow Condensed";font-size:18px;width:18px}.optics li.ok span{color:#4ee0a0}.optics li.no span{color:#e38a7a}.optics li.no{border-left:3px solid #e38a7a}
+.stats{display:flex;gap:20px;align-items:center;margin-bottom:14px}.spark{width:310px;max-width:60vw;height:84px}.stats b{font:500 36px "Cormorant SC",serif;color:#7fd3ff}
+.ptable{width:100%;max-width:820px;border-collapse:collapse;font-family:"Barlow Condensed";letter-spacing:.04em}.ptable th,.ptable td{padding:8px 10px;border-bottom:1px solid var(--hair);text-align:left;font-weight:400}
+.ptable thead th{color:var(--mist);text-transform:uppercase;font-size:13px}.ptable .n{text-align:right;font-size:18px}.ptable summary{cursor:pointer;color:var(--gold2);text-transform:uppercase;font-size:13px}
+.mini{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:8px}.mini label{width:90px;font-size:12px}.mini input{padding:6px 8px}.mini button{padding:7px 12px}
+.acts{gap:10px;margin:16px 0}.acts form{margin:0}.danger-b{color:#e38a7a!important;border-color:rgba(227,138,122,.35)!important}
+.sizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.size{margin:0;padding:10px;background:var(--panel);border:1px solid var(--hair);display:grid;gap:8px;align-content:start}
+.size canvas{width:100%;height:auto;display:block;background:#000}.size figcaption{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:"Barlow Condensed";letter-spacing:.04em}
+.size figcaption b{font-weight:500;flex:1 1 100%}.size button{padding:6px 12px;font-size:13px}
+.copies{display:grid;gap:14px;max-width:820px}.copy{padding:12px 14px;background:var(--panel);border:1px solid var(--hair)}.copy h3{font-size:20px;margin-bottom:6px}
+.copy pre{white-space:pre-wrap;font:16px/1.5 "Cormorant Garamond",serif;color:var(--ink);margin:0 0 10px}
+.plats{border:1px solid var(--hair);padding:10px 14px;display:flex;flex-wrap:wrap;gap:14px}.plats legend{font-family:"Barlow Condensed";text-transform:uppercase;color:var(--mist);font-size:14px;padding:0 6px}
+.tick-l{display:flex;gap:6px;align-items:center;text-transform:none;font-size:16px;color:var(--ink)}.tick-l input{width:auto}
+input[type=color]{height:42px;padding:4px}
+.site{border:1px solid var(--hair);background:var(--panel);margin-bottom:10px;padding:10px 14px}.site summary{cursor:pointer;font:500 20px "Cormorant SC",serif;color:var(--ink)}.site summary i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:10px}
+.site form{margin-top:12px}.steps.plain li{display:block}
+.tiles div.tile{text-decoration:none}

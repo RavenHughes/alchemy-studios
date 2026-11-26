@@ -14,7 +14,7 @@ const STATUSES = [
 const HOMES = ['Alchemy Studios', 'The Realm', 'Digital Epitaph', 'Apex NEO Card', 'ZenChip PRIME', 'Apex VCards', 'Graffix Tools', 'Grace', 'Black Diamond', 'FlashFunded', 'Hughes Laser Lab', 'Other'];
 const ROOMS = [
     ['roster', 'The Architect\'s Projects Roster', 'Every build, its stage and its steps.', true],
-    ['adlab', 'The Ad Lab', 'Headers, specials, promotions and campaigns, with Optics.', false],
+    ['adlab', 'The Ad Lab', 'Headers, specials, promotions and campaigns, with Optics.', true],
     ['bodyshop', 'The Body Shop', 'The avatar lab: scan, splice, walk through the portal to Hyperion.', false],
     ['workshop', 'The Workshop', 'Sound Studio, face engine and the control panel.', false],
 ];
@@ -53,24 +53,25 @@ session_save_path((function () { $d = dataDir() . '/sessions'; @mkdir($d, 0700);
 session_start();
 header('X-Frame-Options: DENY'); header('X-Content-Type-Options: nosniff'); header('Referrer-Policy: same-origin');
 header('Cache-Control: no-store'); header('X-Robots-Tag: noindex, nofollow');
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(24));
 function csrf(): string { return '<input type="hidden" name="csrf" value="' . e($_SESSION['csrf']) . '">'; }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'POST' && !hash_equals($_SESSION['csrf'], (string) ($_POST['csrf'] ?? ''))) { http_response_code(400); exit('The form expired. Go back and try again.'); }
 
 $path = '/' . trim(substr((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/lab/'), PHP_URL_PATH), strlen('/lab')), '/');
+require __DIR__ . '/adlab.php';   // its public parts (tracked links, finished artwork) answer here, before sign-in
 
 // ---------- the page frame
 function page(string $title, string $body, string $crumb = ''): never {
     $f = flash();
     echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         . '<meta name="robots" content="noindex,nofollow"><title>' . e($title) . ' · Creation Lab</title>'
-        . '<link rel="icon" href="/assets/brand/favicon-2027.png"><link rel="stylesheet" href="/lab/lab.css?v=1"></head><body>'
+        . '<link rel="icon" href="/assets/brand/favicon-2027.png"><link rel="stylesheet" href="/lab/lab.css?v=2"></head><body>'
         . '<header class="top"><a class="mark" href="/lab/"><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="44" height="44"><span><b>Creation Lab</b><small>Alchemy Studios · Development House</small></span></a>'
         . (!empty($_SESSION['architect']) ? '<nav>' . $crumb . '<form method="post" action="/lab/signout">' . csrf() . '<button class="ghost">Sign out</button></form></nav>' : '') . '</header>'
         . ($f ? '<p class="flash" role="status">' . e($f) . '</p>' : '')
-        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=1"></script></body></html>';
+        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=2"></script></body></html>';
     exit;
 }
 
@@ -154,6 +155,7 @@ function pct(array $p): int { $n = count($p['steps']); return $n ? (int) round(1
 function badge(string $st): string { [$l, $c] = STATUSES[$st] ?? STATUSES['planned']; return '<span class="badge" style="--c:' . $c . '">' . e($l) . '</span>'; }
 
 // ---------- pages
+adPages($path, $method);
 if ($path === '/') {
     $sortR(); $counts = array_count_values(array_column($roster, 'status'));
     $tiles = ''; foreach (STATUSES as $k => [$l, $c]) $tiles .= '<a class="tile" href="/lab/roster?s=' . $k . '" style="--c:' . $c . '"><b>' . ($counts[$k] ?? 0) . '</b><span>' . e($l) . '</span></a>';
