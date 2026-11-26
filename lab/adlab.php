@@ -208,6 +208,7 @@ function adPages(string $path, string $method): void
     if (!str_starts_with($path, '/adlab')) return;
     $sites = adSites(); $all = adCampaigns();
     $crumb = '<a href="/lab/adlab">Ad Lab</a>';
+    if (str_starts_with($path, '/adlab/worklog')) { workLog($path, $method); return; }
 
     // ----- changes
     if ($method === 'POST') {
@@ -357,7 +358,7 @@ function adPages(string $path, string $method): void
     $clicks = adClicks();
     $sitesById = array_column($sites, null, 'id');
     $badge = fn ($st) => '<span class="badge" style="--c:' . (CSTATUS[$st][1] ?? '#999') . '">' . e(CSTATUS[$st][0] ?? $st) . '</span>';
-    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a><a href="/lab/adlab/artist"' . ($path === '/adlab/artist' ? ' aria-current="true"' : '') . '>Artist</a><a href="/lab/adlab/billing"' . (str_starts_with($path, '/adlab/billing') || str_starts_with($path, '/adlab/invoice') ? ' aria-current="true"' : '') . '>Billing</a></nav>';
+    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a><a href="/lab/adlab/artist"' . ($path === '/adlab/artist' ? ' aria-current="true"' : '') . '>Artist</a><a href="/lab/adlab/billing"' . (str_starts_with($path, '/adlab/billing') || str_starts_with($path, '/adlab/invoice') ? ' aria-current="true"' : '') . '>Billing</a><a href="/lab/adlab/worklog">Services log</a></nav>';
     $card = function (array $c) use ($clicks, $sitesById, $badge): string {
         [$by] = adClickSum($clicks, $c['id']); $site = $sitesById[$c['site']] ?? ['name' => $c['site'], 'accent' => '#c9a45c'];
         $o = adOptics($c, $sitesById[$c['site']] ?? ['url' => '', 'name' => '', 'tags' => '']);
@@ -397,10 +398,12 @@ function adPages(string $path, string $method): void
         $inv = adInvoices(); $r = adRates(); $y = date('Y');
         $owed = 0; $paidY = 0; $deferred = 0;
         foreach ($inv as $v) { if ($v['status'] === 'invoiced') $owed += $v['amount']; if ($v['status'] === 'paid' && substr($v['paid_at'] ?? '', 0, 4) === $y) $paidY += $v['amount']; if ($v['status'] === 'deferred') $deferred += $v['amount']; }
+        $logOpen = 0; $settled = load('worklog-settled', []); foreach (load('worklog', []) as $w) if (empty($settled[$w['period']])) $logOpen += (int) round($w['hours'] * $w['rate']);
+        $deferred += $logOpen;
         $st = ['invoiced' => ['Owed', '#d8b45a'], 'paid' => ['Paid', '#4ee0a0'], 'deferred' => ['Deferred', '#7fd3ff'], 'settled' => ['Settled', '#4ee0a0'], 'void' => ['Void', '#7b8a92']];
         $rows = ''; foreach (array_reverse($inv) as $v) $rows .= '<tr><td><a href="/lab/adlab/invoice/' . e($v['no']) . '">' . e($v['no']) . '</a></td><td>' . e(date('M j, Y', strtotime($v['issued']))) . '</td><td>' . e($v['to']) . '</td><td>' . e($v['kind'] === 'client' ? 'Work for hire' : 'Service to ZenChip (deferred)') . '</td><td class="n">' . money($v['amount']) . '</td><td><span class="badge" style="--c:' . $st[$v['status']][1] . '">' . e($st[$v['status']][0]) . '</span></td></tr>';
         page('Billing', '<section class="hero"><h1>Billing</h1><p>Design for clients is work for hire, invoiced when the client approves. Design for our own sites is a service billed to ZenChip PRIME Corp. when it first runs, logged and deferred.</p></section>' . $nav
-            . '<div class="tiles"><div class="tile" style="--c:#d8b45a"><b>' . money($owed) . '</b><span>Clients owe</span></div><div class="tile" style="--c:#4ee0a0"><b>' . money($paidY) . '</b><span>Paid in ' . $y . '</span></div><div class="tile" style="--c:#7fd3ff"><b>' . money($deferred) . '</b><span>Deferred · owed by ZenChip</span></div></div>'
+            . '<div class="tiles"><div class="tile" style="--c:#d8b45a"><b>' . money($owed) . '</b><span>Clients owe</span></div><div class="tile" style="--c:#4ee0a0"><b>' . money($paidY) . '</b><span>Paid in ' . $y . '</span></div><div class="tile" style="--c:#7fd3ff"><b>' . money($deferred) . '</b><span>Deferred · owed by ZenChip</span></div></div>' . ($logOpen ? '<p class="meta">Includes ' . money($logOpen) . ' from the <a href="/lab/adlab/worklog">services log</a>.</p>' : '')
             . '<table class="ptable"><thead><tr><th>Invoice</th><th>Date</th><th>Billed to</th><th>Kind</th><th>Amount</th><th></th></tr></thead><tbody>' . ($rows ?: '<tr><td colspan="6" class="empty">No invoices yet. They appear when a client approves, or when one of our own campaigns first runs.</td></tr>') . '</tbody></table>'
             . '<p class="row"><a class="btn ghost" href="/lab/adlab/billing.csv">Download all (CSV)</a><a class="btn ghost" href="/lab/adlab/billing-zenchip.csv">ZenChip’s deferred services, for its Finances ledger (CSV)</a></p>'
             . '<h2 class="rule">Standard fees</h2><form method="post" action="/lab/adlab/billing/rates" class="row">' . csrf() . '<label>Client campaign (work for hire)<input name="client" inputmode="decimal" value="' . number_format($r['client'] / 100, 2, '.', '') . '"></label><label>Our own site (to ZenChip)<input name="internal" inputmode="decimal" value="' . number_format($r['internal'] / 100, 2, '.', '') . '"></label><label>Days to pay<input type="number" name="due_days" min="1" max="90" value="' . (int) $r['due_days'] . '"></label><button>Save</button></form>'
@@ -637,4 +640,98 @@ function adBillLine(array $c, array $site): string
         return '<p class="meta">Billed: <a href="/lab/adlab/invoice/' . e($v['no']) . '">' . e($v['no']) . '</a> · ' . money($v['amount']) . ' to ' . e($v['to']) . ' · ' . e($v['status']) . '</p>';
     if (empty($c['price'])) return '<p class="meta">No design fee set.</p>';
     return '<p class="meta">Design fee ' . money((int) $c['price']) . ': ' . (!empty($site['client']) ? 'invoiced to ' . e($site['name']) . ' when they approve (work for hire).' : 'billed to ' . ZENCHIP . ' when it first runs, logged and deferred.') . '</p>';
+}
+
+// ---------- the services log: everything Alchemy Studios built for ZenChip PRIME Corp.'s platforms since 2020,
+// at the discounted rate, month by month. Past months are reconstructed: each entry says it is an estimate and when it
+// was recorded, so a statement for March 2021 reads "recorded November 2026, retroactive estimate", never as if issued then.
+const WL_RATE = 8900;   // $89 an hour, the discounted rate
+const WL_START = '2020-01';
+const WL_PROJECTS = ['ZenChip PRIME website', 'ZenChip shareholder portal', 'Apex NEO Card', 'Apex NFT Card', 'Apex Front Desk (POS)', 'Apex VCards', 'Apex NEO Trade', 'LionShare', 'The Realm', 'Coin of The Realm', 'Digital Epitaph', 'Alchemy Studios site', 'Branding and artwork', 'Servers and hosting administration'];
+
+function wlEntries(): array { $w = load('worklog', []); usort($w, fn ($a, $b) => [$a['period'], $a['project']] <=> [$b['period'], $b['project']]); return $w; }
+
+function workLog(string $path, string $method): void
+{
+    $crumb = '<a href="/lab/adlab/billing">Billing</a>';
+    $all = load('worklog', []); $settled = load('worklog-settled', []);
+    $ym = fn ($v) => preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $v) ? (string) $v : null;
+    if ($method === 'POST') {
+        $s = fn ($k, $n = 300) => trim(mb_substr(str_replace("\0", '', (string) ($_POST[$k] ?? '')), 0, $n));
+        $rate = (int) round(((float) ($s('rate') !== '' ? $s('rate') : WL_RATE / 100)) * 100);
+        $base = ['project' => $s('project', 80) ?: 'General development', 'desc' => $s('desc', 300), 'rate' => $rate > 0 ? $rate : WL_RATE,
+            'basis' => $s('basis') === 'actual' ? 'actual' : 'estimate', 'recorded' => date('Y-m-d'), 'by' => 'J. Daniel Hughes'];
+        if ($path === '/adlab/worklog/add') {
+            $p = $ym($s('period')); $h = round((float) $s('hours'), 2);
+            if (!$p || $h <= 0) { flash('Choose the month and the hours.'); go('/lab/adlab/worklog'); }
+            $all[] = ['id' => bin2hex(random_bytes(4)), 'period' => $p, 'hours' => $h] + $base; save('worklog', $all); flash('Logged.'); go('/lab/adlab/worklog#m' . $p);
+        }
+        if ($path === '/adlab/worklog/spread') {   // one project across many months: the hours each month, or a total shared evenly
+            $from = $ym($s('from')); $to = $ym($s('to'));
+            if (!$from || !$to || $from > $to) { flash('Choose the first and last month.'); go('/lab/adlab/worklog'); }
+            $months = []; for ($t = strtotime($from . '-01'); date('Y-m', $t) <= $to; $t = strtotime('+1 month', $t)) $months[] = date('Y-m', $t);
+            $per = $s('mode') === 'total' ? round((float) $s('hours') / count($months), 2) : round((float) $s('hours'), 2);
+            if ($per <= 0) { flash('Enter the hours.'); go('/lab/adlab/worklog'); }
+            foreach ($months as $m) $all[] = ['id' => bin2hex(random_bytes(4)), 'period' => $m, 'hours' => $per] + $base;
+            save('worklog', $all); flash('Logged ' . count($months) . ' months of ' . $base['project'] . ', ' . $per . ' hours each.'); go('/lab/adlab/worklog');
+        }
+        if (preg_match('#^/adlab/worklog/remove/([a-f0-9]{8})$#', $path, $m)) { $all = array_values(array_filter($all, fn ($w) => $w['id'] !== $m[1])); save('worklog', $all); flash('Removed.'); go('/lab/adlab/worklog'); }
+        if (preg_match('#^/adlab/worklog/settle/(\d{4}-\d{2})$#', $path, $m)) {
+            if (!empty($settled[$m[1]])) unset($settled[$m[1]]); else $settled[$m[1]] = ['on' => date('Y-m-d'), 'note' => $s('note', 120)];
+            save('worklog-settled', $settled); flash('Updated ' . date('F Y', strtotime($m[1] . '-01')) . '.'); go('/lab/adlab/worklog/statement/' . $m[1]);
+        }
+    }
+    $byMonth = []; foreach (wlEntries() as $w) $byMonth[$w['period']][] = $w;
+    $amt = fn (array $ws) => (int) array_sum(array_map(fn ($w) => (int) round($w['hours'] * $w['rate']), $ws));
+    $hrs = fn (array $ws) => array_sum(array_column($ws, 'hours'));
+
+    if ($path === '/adlab/worklog.csv') {   // the shareholder portal's Finances import: one line a month, a liability ZenChip owes Alchemy until settled
+        header('Content-Type: text/csv; charset=utf-8'); header('Content-Disposition: attachment; filename="zenchip-services-log-' . date('Y-m-d') . '.csv"');
+        $o = fopen('php://output', 'w'); fputcsv($o, ['Date', 'Ends', 'Type', 'Monthly', 'Category', 'Party', 'Description', 'Amount', 'Settled', 'Ref']);
+        foreach ($byMonth as $p => $ws) {
+            $est = count(array_filter($ws, fn ($w) => $w['basis'] === 'estimate')) ? 'retroactive estimate' : 'actual hours';
+            $a = $amt($ws); fputcsv($o, [date('Y-m-t', strtotime($p . '-01')), '', 'Liability', '', 'Accounts payable', 'Alchemy Studios, LLC',
+                'Development services, ' . date('F Y', strtotime($p . '-01')) . ': ' . $hrs($ws) . ' h at the discounted rate (' . $est . ', recorded ' . max(array_column($ws, 'recorded')) . ')',
+                number_format($a / 100, 2, '.', ''), !empty($settled[$p]) ? number_format($a / 100, 2, '.', '') : '0.00', 'alchemy-svc-' . $p]);
+        }
+        exit;
+    }
+
+    if (preg_match('#^/adlab/worklog/statement/(\d{4}-\d{2})$#', $path, $m)) {
+        $ws = $byMonth[$m[1]] ?? []; $name = date('F Y', strtotime($m[1] . '-01'));
+        $est = (bool) array_filter($ws, fn ($w) => $w['basis'] === 'estimate');
+        $rows = ''; foreach ($ws as $w) $rows .= '<tr><td>' . e($w['project']) . ($w['desc'] ? '<br><small class="home">' . e($w['desc']) . '</small>' : '') . '</td><td class="n">' . rtrim(rtrim(number_format($w['hours'], 2), '0'), '.') . '</td><td class="n">' . money($w['rate']) . '</td><td class="n">' . money((int) round($w['hours'] * $w['rate'])) . '</td><td>' . ($w['basis'] === 'estimate' ? 'Estimate' : 'Actual') . '</td></tr>';
+        $st = $settled[$m[1]] ?? null;
+        page('Statement ' . $name, '<article class="invoice"><header><div><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="56" height="56"><b>Alchemy Studios, LLC</b><small>Development House · alchemystudiosorlando.com</small></div>'
+            . '<div class="inv-no"><b>Statement of services</b><span>SVC-' . e($m[1]) . '</span><small>Service period: ' . e($name) . '<br>Recorded ' . e(date('F j, Y', strtotime(max(array_column($ws ?: [['recorded' => date('Y-m-d')]], 'recorded'))))) . '</small></div></header>'
+            . '<p><span class="meta">Services rendered to</span><br><b>' . e(ZENCHIP) . '</b></p>'
+            . '<table class="ptable"><thead><tr><th>Platform</th><th>Hours</th><th>Rate</th><th>Amount</th><th>Basis</th></tr></thead><tbody>' . ($rows ?: '<tr><td colspan="5" class="empty">Nothing logged for this month.</td></tr>') . '<tr><th>Total</th><th class="n">' . rtrim(rtrim(number_format($hrs($ws), 2), '0'), '.') . '</th><th></th><th class="n">' . money($amt($ws)) . '</th><th></th></tr></tbody></table>'
+            . '<p class="meta">Development services by Alchemy Studios, LLC, a wholly owned subsidiary, to ZenChip PRIME Corp. at the discounted rate of ' . money(WL_RATE) . ' an hour. Recorded as an intercompany service and deferred: payable when settled between the companies.'
+            . ($est ? ' The hours for this month are a retroactive estimate, recorded on the date shown above, not at the time of the work.' : '') . '</p>'
+            . '<p class="meta">Status: <b>' . ($st ? 'Settled ' . e(date('F j, Y', strtotime($st['on']))) . ($st['note'] ? ' · ' . e($st['note']) : '') : 'Deferred') . '</b></p></article>'
+            . '<div class="row noprint"><button type="button" class="ghost" onclick="print()">Print or save as PDF</button><form method="post" action="/lab/adlab/worklog/settle/' . e($m[1]) . '" class="row">' . csrf() . ($st ? '' : '<input name="note" placeholder="How it was settled (optional)">') . '<button class="ghost">' . ($st ? 'Mark deferred again' : 'Mark settled by ZenChip') . '</button></form><a class="btn ghost" href="/lab/adlab/worklog">Back to the log</a></div>', $crumb);
+    }
+
+    // the log itself: a bar for every month since 2020, the totals, and the months listed
+    $months = []; for ($t = strtotime(WL_START . '-01'); date('Y-m', $t) <= date('Y-m'); $t = strtotime('+1 month', $t)) $months[] = date('Y-m', $t);
+    $vals = array_map(fn ($p) => $amt($byMonth[$p] ?? []), $months); $max = max(1, ...$vals);
+    $bw = 820 / count($months); $bars = '';
+    foreach ($months as $i => $p) { $v = $vals[$i]; $h = $v / $max * 120; $bars .= '<a href="/lab/adlab/worklog/statement/' . $p . '"><rect x="' . round($i * $bw + 1, 1) . '" y="' . round(130 - $h, 1) . '" width="' . round(max($bw - 2, 1), 1) . '" height="' . round(max($h, $v ? 1 : 0.5), 1) . '" fill="' . (!empty($settled[$p]) ? '#4ee0a0' : ($v ? '#7fd3ff' : '#2a2a30')) . '"><title>' . date('M Y', strtotime($p . '-01')) . ': ' . money($v) . '</title></rect></a>'; if (substr($p, 5) === '01') $bars .= '<text x="' . round($i * $bw, 1) . '" y="148" class="yr">' . substr($p, 0, 4) . '</text>'; }
+    $total = $amt($all); $set = 0; foreach ($byMonth as $p => $ws) if (!empty($settled[$p])) $set += $amt($ws);
+    $list = ''; foreach (array_reverse($byMonth, true) as $p => $ws) {
+        $items = ''; foreach ($ws as $w) $items .= '<li><span>' . e($w['project']) . ' · ' . rtrim(rtrim(number_format($w['hours'], 2), '0'), '.') . ' h' . ($w['basis'] === 'estimate' ? ' <small class="home">estimate</small>' : '') . ($w['desc'] ? ' — ' . e($w['desc']) : '') . '</span><form method="post" action="/lab/adlab/worklog/remove/' . $w['id'] . '" data-confirm="Remove this entry?">' . csrf() . '<button class="ghost x" aria-label="Remove">×</button></form></li>';
+        $list .= '<details class="site" id="m' . $p . '"><summary><i style="background:' . (!empty($settled[$p]) ? '#4ee0a0' : '#7fd3ff') . '"></i>' . e(date('F Y', strtotime($p . '-01'))) . ' <small class="home">' . rtrim(rtrim(number_format($hrs($ws), 2), '0'), '.') . ' h · ' . money($amt($ws)) . (!empty($settled[$p]) ? ' · settled' : '') . '</small></summary><ul class="wl">' . $items . '</ul><p><a href="/lab/adlab/worklog/statement/' . $p . '">The month’s statement →</a></p></details>';
+    }
+    $opts = implode('', array_map(fn ($x) => '<option value="' . e($x) . '">', array_unique(array_merge(WL_PROJECTS, array_column(adSites(), 'name')))));
+    $fields = '<div class="row"><label>Platform or project<input name="project" list="wlp" required></label><label>Rate per hour<input name="rate" inputmode="decimal" value="' . number_format(WL_RATE / 100, 2) . '"></label><label>Basis<select name="basis"><option value="estimate">Estimate (reconstructed)</option><option value="actual">Actual hours</option></select></label></div><label>What was built <small>shown on the statement</small><input name="desc" maxlength="300"></label>';
+    page('Services log', '<section class="hero"><h1>Services log</h1><p>Everything Alchemy Studios has built for ZenChip PRIME Corp.’s platforms since 2020, at the discounted rate of ' . money(WL_RATE) . ' an hour, month by month. Past months are marked as retroactive estimates with the date they were recorded.</p></section>'
+        . '<nav class="chips"><a href="/lab/adlab/billing">Billing</a><a href="/lab/adlab/worklog" aria-current="true">Services log</a></nav>'
+        . '<div class="tiles"><div class="tile" style="--c:#7fd3ff"><b>' . money($total) . '</b><span>Services since 2020</span></div><div class="tile" style="--c:#d8b45a"><b>' . money($total - $set) . '</b><span>Deferred · owed by ZenChip</span></div><div class="tile" style="--c:#4ee0a0"><b>' . money($set) . '</b><span>Settled</span></div><div class="tile" style="--c:#9c86ff"><b>' . rtrim(rtrim(number_format($hrs($all), 1), '0'), '.') . '</b><span>Hours</span></div></div>'
+        . '<svg viewBox="0 0 820 152" class="wlchart" role="img" aria-label="Services each month since 2020">' . $bars . '</svg><p class="meta">Each bar is a month; click one for its statement. Blue is deferred, green is settled.</p>'
+        . '<datalist id="wlp">' . $opts . '</datalist>'
+        . '<h2 class="rule">Log a stretch of months</h2><form method="post" action="/lab/adlab/worklog/spread" class="stack wide">' . csrf() . $fields
+        . '<div class="row"><label>First month<input type="month" name="from" min="' . WL_START . '" max="' . date('Y-m') . '" required></label><label>Last month<input type="month" name="to" min="' . WL_START . '" max="' . date('Y-m') . '" required></label><label>Hours<input name="hours" inputmode="decimal" required></label><label>The hours are<select name="mode"><option value="month">each month</option><option value="total">the total, shared evenly</option></select></label></div><div class="row"><button>Log these months</button></div></form>'
+        . '<h2 class="rule">Log one month</h2><form method="post" action="/lab/adlab/worklog/add" class="stack wide">' . csrf() . $fields . '<div class="row"><label>Month<input type="month" name="period" min="' . WL_START . '" max="' . date('Y-m') . '" required></label><label>Hours<input name="hours" inputmode="decimal" required></label></div><div class="row"><button>Log it</button></div></form>'
+        . '<h2 class="rule">Month by month</h2>' . ($list ?: '<p class="empty">Nothing logged yet.</p>')
+        . '<p class="row"><a class="btn ghost" href="/lab/adlab/worklog.csv">For ZenChip’s Finances ledger (CSV, one line a month)</a></p>', $crumb);
 }
