@@ -62,7 +62,7 @@ document.addEventListener('submit', async (ev) => {
         keep.disabled = true; const r = await fetch(k.save, { method: 'POST', body: fd, credentials: 'same-origin' }).then((x) => x.json()).catch(() => ({}));
         keep.textContent = r.ok ? 'Kept ✓' : 'Didn’t save'; keep.disabled = false;
       }, 'image/png');
-      cap.append(dl, keep); fig.append(cap); box.querySelector('.sizes').append(fig);
+      if (k.review) cap.append(dl); else cap.append(dl, keep); fig.append(cap); box.querySelector('.sizes').append(fig);
     }
   })();
 })();

@@ -67,11 +67,11 @@ function page(string $title, string $body, string $crumb = ''): never {
     $f = flash();
     echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         . '<meta name="robots" content="noindex,nofollow"><title>' . e($title) . ' · Creation Lab</title>'
-        . '<link rel="icon" href="/assets/brand/favicon-2027.png"><link rel="stylesheet" href="/lab/lab.css?v=2"></head><body>'
+        . '<link rel="icon" href="/assets/brand/favicon-2027.png"><link rel="stylesheet" href="/lab/lab.css?v=3"></head><body>'
         . '<header class="top"><a class="mark" href="/lab/"><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="44" height="44"><span><b>Creation Lab</b><small>Alchemy Studios · Development House</small></span></a>'
         . (!empty($_SESSION['architect']) ? '<nav>' . $crumb . '<form method="post" action="/lab/signout">' . csrf() . '<button class="ghost">Sign out</button></form></nav>' : '') . '</header>'
         . ($f ? '<p class="flash" role="status">' . e($f) . '</p>' : '')
-        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=4"></script></body></html>';
+        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=5"></script></body></html>';
     exit;
 }
 

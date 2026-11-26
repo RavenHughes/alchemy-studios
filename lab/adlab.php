@@ -101,8 +101,22 @@ function adOptics(array $c, array $site): array
         ['The words fit every platform' . ($long ? ' (too long for ' . implode(', ', $long) . ')' : ''), 10, $copyOk && $c['platforms']],
         ['At least one platform chosen', 5, (bool) $c['platforms']],
     ];
+    if (!empty($site['client'])) $checks[] = ['Approved by ' . ($site['contact'] ?: 'the client') . ' (this version)', 0, adApproved($c, $site)];
     $score = 0; foreach ($checks as [, $w, $ok]) if ($ok) $score += $w;
     return ['score' => $score, 'checks' => $checks];
+}
+
+/** A client's campaign must be approved, on its current version, before it runs. */
+function adApproved(array $c, ?array $site): bool
+{
+    if (empty($site['client'])) return true;
+    $a = $c['approval'] ?? null;
+    return $a && $a['state'] === 'approved' && ($a['version'] ?? '') === adVersion($c);
+}
+/** What the client signs off on: everything they see. Any change after approval needs a new approval. */
+function adVersion(array $c): string
+{
+    return substr(hash('sha256', json_encode([$c['site'], $c['headline'], $c['body'], $c['offer'], $c['coupon'], $c['cta'], $c['link'], $c['starts'], $c['ends'], $c['platforms'], $c['tags'], $c['art'] ?? '', $c['art_w'] ?? 0, $c['art_prompt'] ?? ''])), 0, 12);
 }
 
 function adClicks(): array { return load('clicks', []); }
@@ -134,6 +148,33 @@ if (preg_match('#^/art/([a-f0-9]{8})-([a-z]+)-(\d+)\.png$#', $path, $m)) {
     if (!is_file($f)) { http_response_code(404); exit('Not found'); }
     header('Content-Type: image/png'); header('Cache-Control: public, max-age=86400'); header('Content-Security-Policy: default-src \'none\''); readfile($f); exit;
 }
+// ---------- public: the client's review page (the link itself is the key)
+if (preg_match('#^/review/([a-f0-9]{32})(/art|/logo)?$#', $path, $m)) {
+    $all = adCampaigns(); $i = null;
+    foreach ($all as $k => $cc) if (hash_equals((string) ($cc['approval']['token'] ?? ''), $m[1])) $i = $k;
+    if ($i === null || ($all[$i]['status'] ?? '') === 'dead') { http_response_code(404); exit('This review link is no longer active.'); }
+    $c = $all[$i]; $site = adSite($c['site']);
+    if (($m[2] ?? '') === '/art') { $f = artDir('art') . '/' . ($c['art'] ?? ''); if (empty($c['art']) || !is_file($f)) { http_response_code(404); exit; } header('Content-Type: ' . (mime_content_type($f) ?: 'image/jpeg')); header('Cache-Control: private, max-age=600'); readfile($f); exit; }
+    if (($m[2] ?? '') === '/logo') { adLogo($site); exit; }
+    $current = ($c['approval']['version'] ?? '') === adVersion($c);
+    if ($method === 'POST') {
+        if (!hash_equals($_SESSION['csrf'], (string) ($_POST['csrf'] ?? ''))) { http_response_code(400); exit('The page expired. Open the link again.'); }
+        $dec = $_POST['decision'] ?? ''; $name = trim(mb_substr((string) ($_POST['name'] ?? ''), 0, 80)); $note = trim(mb_substr((string) ($_POST['note'] ?? ''), 0, 2000));
+        $err = !in_array($dec, ['approved', 'changes'], true) ? 'Choose approve or request changes.' : ($name === '' ? 'Type your name to sign.' : ($dec === 'changes' && $note === '' ? 'Tell us what to change.' : ($current ? '' : 'This version has changed since the link was sent. Open the link again.')));
+        if (!$err) {
+            $rec = ['state' => $dec, 'by' => $name, 'note' => $note, 'at' => date('c'), 'ip' => substr(hash('sha256', (string) ($_SERVER['REMOTE_ADDR'] ?? '')), 0, 16)];
+            $all[$i]['approval'] = array_merge($all[$i]['approval'], ['state' => $dec, 'by' => $name, 'note' => $note, 'at' => $rec['at']]);
+            $all[$i]['approval']['history'][] = $rec + ['version' => adVersion($c)];
+            save('campaigns', $all);
+            @mail('raven@alchemystudiosorlando.com', ($dec === 'approved' ? 'Approved: ' : 'Changes requested: ') . $c['headline'] . ' (' . ($site['name'] ?? '') . ')',
+                ($dec === 'approved' ? "$name approved the campaign \"{$c['headline']}\"." : "$name asked for changes to \"{$c['headline']}\":\n\n$note") . "\n\nhttps://alchemystudiosorlando.com/lab/adlab/c/{$c['id']}",
+                "From: Alchemy Studios <raven@alchemystudiosorlando.com>\r\nContent-Type: text/plain; charset=UTF-8");
+            header('Location: /lab/review/' . $m[1], true, 303); exit;
+        }
+        $_SESSION['review_err'] = $err; header('Location: /lab/review/' . $m[1], true, 303); exit;
+    }
+    adReviewPage($c, $site, $m[1], $current);
+}
 if (!function_exists('adPages')) {
 function adPages(string $path, string $method): void
 {
@@ -163,10 +204,12 @@ function adPages(string $path, string $method): void
                 move_uploaded_file($up['tmp_name'], artDir('art') . "/{$c['id']}.$ext");
                 $c['art'] = "{$c['id']}.$ext"; $c['art_w'] = $info[0]; $c['art_h'] = $info[1];
             }
+            $paused = false;
+            if ($c['status'] === 'running' && !adApproved($c, adSite($c['site']))) { $c['status'] = 'paused'; $paused = true; }   // a client's campaign changed: it waits for their approval again
             if ($i !== null) $all[$i] = $c; else $all[] = $c;
-            save('campaigns', $all); flash('Saved.'); go("/lab/adlab/c/{$c['id']}");
+            save('campaigns', $all); flash($paused ? 'Saved and paused: the client needs to approve this new version before it runs again.' : 'Saved.'); go("/lab/adlab/c/{$c['id']}");
         }
-        if (preg_match('#^/adlab/c/([a-f0-9]{8})/(run|pause|kill|revive|clone|metrics|render|fb-post|fb-stats|generate)$#', $path, $m)) {
+        if (preg_match('#^/adlab/c/([a-f0-9]{8})/(run|pause|kill|revive|clone|metrics|render|fb-post|fb-stats|generate|approval)$#', $path, $m)) {
             $i = adFind($all, $m[1]); if ($i === null) { http_response_code(404); exit; }
             $c = &$all[$i]; $act = $m[2];
             if ($act === 'generate') {
@@ -183,6 +226,11 @@ function adPages(string $path, string $method): void
                     $c['art'] = "{$c['id']}.$ext"; $c['art_w'] = $info[0]; $c['art_h'] = $info[1]; $c['art_prompt'] = $desc; $c['art_model'] = $model; $c['generated'] = ($c['generated'] ?? 0) + 1;
                     flash('New artwork made with ' . $model . '. The sizes below are drawn from it.');
                 } catch (Throwable $e) { flash('The artist couldn’t make it: ' . $e->getMessage()); }
+            }
+            if (in_array($act, ['run', 'fb-post'], true) && !adApproved($c, adSite($c['site']))) { flash('This is a client’s campaign: send it for approval first. It can run once they approve this version.'); unset($c); go("/lab/adlab/c/{$m[1]}"); }
+            if ($act === 'approval') {
+                $c['approval'] = ['state' => 'pending', 'token' => $c['approval']['token'] ?? bin2hex(random_bytes(16)), 'version' => adVersion($c), 'sent' => date('c'), 'history' => $c['approval']['history'] ?? []];
+                flash('The approval link is ready. Copy it below and send it to the client.');
             }
             if ($act === 'run') { $c['status'] = 'running'; $c['started'] ??= date('c'); flash('Running.'); }
             if ($act === 'pause') { $c['status'] = 'paused'; flash('Paused.'); }
@@ -235,11 +283,12 @@ function adPages(string $path, string $method): void
             $id = (string) ($_POST['id'] ?? ''); $s = fn ($k, $n = 200) => trim(mb_substr((string) ($_POST[$k] ?? ''), 0, $n));
             $hex = fn ($k, $d) => preg_match('/^#[0-9a-fA-F]{6}$/', $s($k)) ? $s($k) : $d;
             $found = false;
-            foreach ($sites as &$st) if ($st['id'] === $id) { $found = true; $st = array_merge($st, ['name' => $s('name', 80) ?: $st['name'], 'url' => filter_var($s('url'), FILTER_VALIDATE_URL) ?: $st['url'],
+            $who = ['client' => !empty($_POST['client']), 'contact' => $s('contact', 80), 'email' => filter_var($s('email'), FILTER_VALIDATE_EMAIL) ?: '', 'phone' => preg_replace('/\D/', '', $s('phone', 30))];
+            foreach ($sites as &$st) if ($st['id'] === $id) { $found = true; $st = array_merge($st, $who, ['name' => $s('name', 80) ?: $st['name'], 'url' => filter_var($s('url'), FILTER_VALIDATE_URL) ?: $st['url'],
                 'bg' => $hex('bg', $st['bg']), 'accent' => $hex('accent', $st['accent']), 'text' => $hex('text', $st['text']), 'voice' => $s('voice', 120), 'tags' => $s('tags'), 'logo' => $s('logo', 300)]); }
             unset($st);
             if (!$found && $s('name') !== '') $sites[] = ['id' => substr(preg_replace('/[^a-z0-9]/', '', strtolower($s('name'))), 0, 16) ?: bin2hex(random_bytes(3)), 'name' => $s('name', 80), 'url' => filter_var($s('url'), FILTER_VALIDATE_URL) ?: '',
-                'bg' => $hex('bg', '#000000'), 'accent' => $hex('accent', '#c9a45c'), 'text' => $hex('text', '#ffffff'), 'voice' => $s('voice', 120), 'tags' => $s('tags'), 'logo' => $s('logo', 300)];
+                'bg' => $hex('bg', '#000000'), 'accent' => $hex('accent', '#c9a45c'), 'text' => $hex('text', '#ffffff'), 'voice' => $s('voice', 120), 'tags' => $s('tags'), 'logo' => $s('logo', 300)] + $who;
             save('sites', $sites); flash('Site saved.'); go('/lab/adlab/sites');
         }
         if ($path === '/adlab/artist') {
@@ -290,11 +339,13 @@ function adPages(string $path, string $method): void
     }
 
     if ($path === '/adlab/sites') {
-        $rows = ''; foreach (array_merge($sites, [['id' => '', 'name' => '', 'url' => '', 'bg' => '#000000', 'accent' => '#c9a45c', 'text' => '#ffffff', 'voice' => '', 'tags' => '', 'logo' => '']]) as $s)
-            $rows .= '<details class="site"' . ($s['id'] ? '' : ' open') . '><summary><i style="background:' . e($s['accent']) . '"></i>' . ($s['id'] ? e($s['name']) : '+ Add a site') . ' <small class="home">' . e((string) parse_url($s['url'], PHP_URL_HOST)) . '</small></summary>'
+        $rows = ''; foreach (array_merge($sites, [['id' => '', 'name' => '', 'url' => '', 'bg' => '#000000', 'accent' => '#c9a45c', 'text' => '#ffffff', 'voice' => '', 'tags' => '', 'logo' => '', 'client' => true]]) as $s)
+            $rows .= '<details class="site"' . ($s['id'] ? '' : ' open') . '><summary><i style="background:' . e($s['accent']) . '"></i>' . ($s['id'] ? e($s['name']) : '+ Add a site') . (!empty($s['client']) && $s['id'] ? ' <span class="badge" style="--c:#7fd3ff">client</span>' : '') . ' <small class="home">' . e((string) parse_url($s['url'], PHP_URL_HOST)) . '</small></summary>'
                 . '<form method="post" action="/lab/adlab/site" class="stack wide">' . csrf() . '<input type="hidden" name="id" value="' . e($s['id']) . '"><div class="row"><label>Name<input name="name" value="' . e($s['name']) . '" required></label><label>Website<input name="url" type="url" value="' . e($s['url']) . '"></label></div>'
                 . '<div class="row"><label>Background<input type="color" name="bg" value="' . e($s['bg']) . '"></label><label>Accent<input type="color" name="accent" value="' . e($s['accent']) . '"></label><label>Text<input type="color" name="text" value="' . e($s['text']) . '"></label></div>'
-                . '<label>Tagline<input name="voice" value="' . e($s['voice']) . '"></label><label>Hashtags <small>words, no # needed</small><input name="tags" value="' . e($s['tags']) . '"></label><label>Logo address <small>a link to the logo (PNG, SVG or WebP)</small><input name="logo" value="' . e($s['logo']) . '"></label><div class="row"><button>Save site</button></div></form></details>';
+                . '<label>Tagline<input name="voice" value="' . e($s['voice']) . '"></label><label>Hashtags <small>words, no # needed</small><input name="tags" value="' . e($s['tags']) . '"></label><label>Logo address <small>a link to the logo (PNG, SVG or WebP)</small><input name="logo" value="' . e($s['logo']) . '"></label>'
+                . '<label class="tick-l"><input type="checkbox" name="client" value="1"' . (!empty($s['client']) ? ' checked' : '') . '> A client’s site: campaigns go to the client for approval before they run</label>'
+                . '<div class="row"><label>Client contact<input name="contact" value="' . e($s['contact'] ?? '') . '"></label><label>Client email<input name="email" type="email" value="' . e($s['email'] ?? '') . '"></label><label>WhatsApp number <small>with country code, e.g. 1 606 555 0123</small><input name="phone" inputmode="tel" value="' . e($s['phone'] ?? '') . '"></label></div><div class="row"><button>Save site</button></div></form></details>';
         page('Sites', '<section class="hero"><h1>Sites</h1><p>Each site’s brand kit: its colours, tagline, hashtags and logo. Every campaign takes its look from here.</p></section>' . $nav . $rows, $crumb);
     }
 
@@ -364,12 +415,10 @@ function adPages(string $path, string $method): void
         }
         $fb = load('facebook', []);
         $fbBox = in_array('facebook', $c['platforms'], true) ? '<div class="row">' . ($fb ? $act('fb-post', isset($c['posts']['facebook']) ? 'Post to Facebook again' : 'Post to ' . e($fb['page_name'])) . (isset($c['posts']['facebook']) ? $act('fb-stats', 'Bring in Facebook numbers', 'ghost') : '') : '<a class="btn ghost" href="/lab/adlab/facebook">Connect Facebook to post from here</a>') . '</div>' : '';
-        $sizes = []; foreach ($c['platforms'] as $p) foreach (PLATFORMS[$p][2] as $lab => [$w, $h]) $sizes[] = ['p' => $p, 'name' => PLATFORMS[$p][0] . ' · ' . $lab, 'w' => $w, 'h' => $h];
-        $kit = ['art' => !empty($c['art']) ? '/lab/adlab/art/' . $c['art'] : null, 'logo' => $site['logo'] !== '' ? '/lab/adlab/logo/' . $site['id'] : null, 'bg' => $site['bg'], 'accent' => $site['accent'], 'text' => $site['text'],
-            'headline' => $c['headline'], 'offer' => $c['offer'], 'coupon' => $c['coupon'], 'cta' => $c['cta'], 'site' => $site['name'], 'url' => (string) parse_url($site['url'], PHP_URL_HOST), 'voice' => $site['voice'],
-            'sizes' => $sizes, 'save' => '/lab/adlab/c/' . $c['id'] . '/render', 'csrf' => $_SESSION['csrf']];
+        $kit = adKit($c, $site, '/lab/adlab/art/' . ($c['art'] ?? ''), '/lab/adlab/logo/' . $site['id'], false);
         page($c['headline'], '<article class="proj" style="--c:' . e($site['accent']) . '"><header>' . ring($o['score'], $col) . '<div><h1>' . e($c['headline']) . '</h1><p>' . $badge($c['status']) . ' <span class="home">' . e($site['name']) . '</span> <span class="home">' . e(KINDS[$c['kind']] ?? '') . '</span>' . ($c['event'] ? ' <span class="home">' . e($c['event']) . '</span>' : '') . ($c['starts'] || $c['ends'] ? ' <span class="home">' . e($c['starts'] ? date('M j', strtotime($c['starts'])) : '…') . ' – ' . e($c['ends'] ? date('M j, Y', strtotime($c['ends'])) : 'open') . '</span>' : '') . '</p></div></header>'
             . $acts . ($c['status'] === 'dead' ? '<aside class="law"><b>In the Dead Archive</b><p>Killed ' . e(date('M j, Y', strtotime($c['killed'] ?? 'now'))) . '.' . (!empty($c['kill_reason']) ? ' ' . e($c['kill_reason']) : '') . '</p></aside>' : '')
+            . (!empty($site['client']) ? adApprovalBox($c, $site) : '')
             . '<h2 class="rule">Optics · ' . $o['score'] . ' of 100</h2><ul class="optics">' . $checks . '</ul>'
             . '<h2 class="rule">How it’s doing</h2><div class="stats"><svg viewBox="0 0 310 84" class="spark" role="img" aria-label="Tracked clicks, last 14 days">' . $bars . '</svg><div><b>' . array_sum($by) . '</b> tracked clicks<br><small class="home">last 14 days shown</small></div></div>'
             . '<table class="ptable"><thead><tr><th>Platform</th><th>Clicks</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th></th></tr></thead><tbody>' . $platRows . '</tbody></table>' . $fbBox
@@ -383,15 +432,7 @@ function adPages(string $path, string $method): void
             . '<h2 class="rule">The words, per platform</h2><div class="copies">' . $copies . '</div></article>', $crumb);
     }
 
-    if (preg_match('#^/adlab/logo/([a-z0-9]+)$#', $path, $m)) {   // the site's logo, fetched once and kept here, so the composer can draw it
-        $site = adSite($m[1]); $src = (string) ($site['logo'] ?? '');
-        if ($src === '') { http_response_code(404); exit; }
-        if (str_starts_with($src, '/')) { header('Location: ' . $src); exit; }
-        $f = artDir('logos') . '/' . $m[1] . '-' . substr(hash('sha256', $src), 0, 10);
-        if (!is_file($f)) { $b = @file_get_contents($src, false, stream_context_create(['http' => ['timeout' => 15]])); if ($b === false || strlen($b) > 5_000_000) { http_response_code(404); exit; } file_put_contents($f, $b); }
-        $mime = mime_content_type($f) ?: 'image/png'; if (str_contains($mime, 'xml') || str_contains($mime, 'text')) $mime = 'image/svg+xml';
-        header('Content-Type: ' . $mime); header('Cache-Control: private, max-age=86400'); readfile($f); exit;
-    }
+    if (preg_match('#^/adlab/logo/([a-z0-9]+)$#', $path, $m)) { adLogo(adSite($m[1])); exit; }
     if (preg_match('#^/adlab/art/([a-f0-9]{8}\.(?:jpg|png|webp))$#', $path, $m)) {
         $f = artDir('art') . '/' . $m[1]; if (!is_file($f)) { http_response_code(404); exit; }
         header('Content-Type: ' . (mime_content_type($f) ?: 'image/jpeg')); header('Cache-Control: private, max-age=3600'); readfile($f); exit;
@@ -438,4 +479,64 @@ function artistMake(string $prompt, string $shape): array
         $errors[] = $model . ': ' . ($raw === false ? $err : (string) ($j['error']['message'] ?? $j['message'] ?? ('HTTP ' . $code)));
     }
     throw new RuntimeException(implode(' · ', $errors));
+}
+
+/** The site's logo, fetched once and kept here, so the composer can draw it (same address as the page). */
+function adLogo(?array $site): void
+{
+    $src = (string) ($site['logo'] ?? '');
+    if ($src === '') { http_response_code(404); return; }
+    if (str_starts_with($src, '/')) { header('Location: ' . $src); return; }
+    $f = artDir('logos') . '/' . $site['id'] . '-' . substr(hash('sha256', $src), 0, 10);
+    if (!is_file($f)) { $b = @file_get_contents($src, false, stream_context_create(['http' => ['timeout' => 15]])); if ($b === false || strlen($b) > 5_000_000) { http_response_code(404); return; } file_put_contents($f, $b); }
+    $mime = mime_content_type($f) ?: 'image/png'; if (str_contains($mime, 'xml') || str_contains($mime, 'text')) $mime = 'image/svg+xml';
+    header('Content-Type: ' . $mime); header('Cache-Control: private, max-age=86400'); readfile($f);
+}
+
+function adKit(array $c, array $site, string $artUrl, string $logoUrl, bool $review): array
+{
+    $sizes = []; foreach ($c['platforms'] as $p) foreach (PLATFORMS[$p][2] as $lab => [$w, $h]) $sizes[] = ['p' => $p, 'name' => PLATFORMS[$p][0] . ' · ' . $lab, 'w' => $w, 'h' => $h];
+    return ['art' => !empty($c['art']) ? $artUrl : null, 'logo' => $site['logo'] !== '' ? $logoUrl : null, 'bg' => $site['bg'], 'accent' => $site['accent'], 'text' => $site['text'],
+        'headline' => $c['headline'], 'offer' => $c['offer'], 'coupon' => $c['coupon'], 'cta' => $c['cta'], 'site' => $site['name'], 'url' => (string) parse_url($site['url'], PHP_URL_HOST), 'voice' => $site['voice'],
+        'sizes' => $sizes, 'save' => $review ? null : '/lab/adlab/c/' . $c['id'] . '/render', 'csrf' => $review ? '' : $_SESSION['csrf'], 'review' => $review];
+}
+
+/** On the campaign page: where the client's approval stands, and the link to send them. */
+function adApprovalBox(array $c, array $site): string
+{
+    $a = $c['approval'] ?? null; $cur = $a && ($a['version'] ?? '') === adVersion($c);
+    $link = $a ? 'https://alchemystudiosorlando.com/lab/review/' . $a['token'] : '';
+    $state = !$a ? ['Not sent yet', '#7b8a92'] : (!$cur ? ['Changed since it was sent: send it again', '#d8b45a'] : (['pending' => ['Waiting for ' . ($site['contact'] ?: 'the client'), '#d8b45a'], 'approved' => ['Approved by ' . ($a['by'] ?? '') . ' · ' . date('M j, g:i a', strtotime($a['at'] ?? 'now')), '#4ee0a0'], 'changes' => ['Changes requested by ' . ($a['by'] ?? ''), '#e38a7a']][$a['state']] ?? ['', '#999']));
+    $mailto = $a && $cur && !empty($site['email']) ? 'mailto:' . rawurlencode($site['email']) . '?subject=' . rawurlencode('For your approval: ' . $c['headline']) . '&body=' . rawurlencode('Hi ' . ($site['contact'] ?: '') . ",\n\nHere is the campaign for your approval. You can see every size and the words for each platform, then approve it or ask for changes:\n\n$link\n\nThank you,\nAlchemy Studios") : '';
+    $msg = 'Hi ' . ($site['contact'] ?: '') . ', here is the campaign "' . $c['headline'] . '" for your approval. You can see every size and the words for each platform, then approve it or ask for changes: ' . $link;
+    $wa = $a && $cur ? 'https://wa.me/' . ($site['phone'] ?? '') . '?text=' . rawurlencode($msg) : '';
+    return '<aside class="law appr" style="border-color:' . $state[1] . '"><b>Client approval</b><p><span class="badge" style="--c:' . $state[1] . '">' . e($state[0]) . '</span></p>'
+        . ($a && ($a['state'] ?? '') === 'changes' && $cur ? '<p>“' . nl2br(e($a['note'] ?? '')) . '”</p>' : '')
+        . ($a && $cur ? '<p class="row"><input readonly value="' . e($link) . '" onclick="this.select()"><button type="button" class="ghost" data-copy="' . e($link) . '">Copy link</button>' . ($mailto ? '<a class="btn ghost" href="' . e($mailto) . '">Email it to ' . e($site['contact'] ?: 'the client') . '</a>' : '') . ($wa ? '<a class="btn ghost" href="' . e($wa) . '" target="_blank" rel="noopener">Send on WhatsApp' . (empty($site['phone']) ? ' (choose the chat)' : ' to ' . e($site['contact'] ?: 'the client')) . '</a>' : '') . '</p>' : '')
+        . (!$a || !$cur || ($a['state'] ?? '') === 'changes' ? '<form method="post" action="/lab/adlab/c/' . $c['id'] . '/approval">' . csrf() . '<button>' . ($a ? 'Send this version for approval' : 'Make the approval link') . '</button></form>' : '')
+        . '<p class="meta">The campaign can run, or post, once the client approves the version they saw. Any later change asks for a new approval.</p></aside>';
+}
+
+/** The page the client opens: their campaign, every size, the words per platform, approve or ask for changes. */
+function adReviewPage(array $c, ?array $site, string $token, bool $current): never
+{
+    $a = $c['approval']; $err = $_SESSION['review_err'] ?? null; unset($_SESSION['review_err']);
+    $kit = adKit($c, $site, '/lab/review/' . $token . '/art', '/lab/review/' . $token . '/logo', true);
+    $copies = ''; foreach ($c['platforms'] as $p) { $cp = adCopy($c, $site, $p); $copies .= '<div class="copy"><h3>' . e(PLATFORMS[$p][0]) . '</h3>' . ($cp['title'] ? '<p class="meta">Title: ' . e($cp['title']) . '</p>' : '') . '<pre>' . e(preg_replace('#https://alchemystudiosorlando\.com/lab/go/\S+#', $c['link'] ?: $site['url'], $cp['text'])) . '</pre></div>'; }
+    $done = $current && in_array($a['state'], ['approved', 'changes'], true);
+    $decided = $done ? '<aside class="law" style="border-color:' . ($a['state'] === 'approved' ? '#4ee0a0' : '#e38a7a') . '"><b>' . ($a['state'] === 'approved' ? 'Approved' : 'Changes requested') . '</b><p>' . e($a['by']) . ' · ' . e(date('F j, Y \a\t g:i a', strtotime($a['at']))) . ($a['note'] ? '<br>“' . nl2br(e($a['note'])) . '”' : '') . '</p><p class="meta">Thank you. ' . ($a['state'] === 'approved' ? 'We’ll run it as shown' . ($c['starts'] ? ' from ' . e(date('F j', strtotime($c['starts']))) : '') . '.' : 'We’ll make the changes and send you the new version.') . '</p></aside>' : '';
+    $form = !$current ? '<aside class="law"><b>Updated</b><p>This campaign was changed after the link was sent. We’ll send you the new version shortly.</p></aside>'
+        : ($done ? '' : '<form method="post" class="stack wide decide">' . csrf() . ($err ? '<p class="flash">' . e($err) . '</p>' : '')
+        . '<fieldset class="plats"><legend>Your decision</legend><label class="tick-l"><input type="radio" name="decision" value="approved" required> Approve: run it as shown</label><label class="tick-l"><input type="radio" name="decision" value="changes"> Request changes</label></fieldset>'
+        . '<label>Notes <small>needed if you’re asking for changes</small><textarea name="note" rows="3"></textarea></label><label>Your name <small>typing it signs your decision</small><input name="name" required autocomplete="name" value="' . e($site['contact'] ?? '') . '"></label><div class="row"><button>Send my decision</button></div></form>');
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>For your approval · ' . e($c['headline']) . '</title>'
+        . '<link rel="icon" href="/assets/brand/favicon-2027.png"><link rel="stylesheet" href="/lab/lab.css?v=3"></head><body>'
+        . '<header class="top"><span class="mark"><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="44" height="44"><span><b>Alchemy Studios</b><small>Campaign review for ' . e($site['name'] ?? '') . '</small></span></span></header><main>'
+        . '<section class="hero"><h1>' . e($c['headline']) . '</h1><p>' . e(KINDS[$c['kind']] ?? '') . ($c['event'] ? ' · ' . e($c['event']) : '') . ($c['starts'] || $c['ends'] ? ' · runs ' . e($c['starts'] ? date('M j', strtotime($c['starts'])) : 'now') . ' – ' . e($c['ends'] ? date('M j, Y', strtotime($c['ends'])) : 'open') : '') . '</p></section>'
+        . $decided . '<h2 class="rule">The artwork, every size</h2><div id="composer" data-kit="' . e(json_encode($kit)) . '"></div>'
+        . '<h2 class="rule">The words, per platform</h2><div class="copies">' . $copies . '</div>'
+        . ($c['offer'] || $c['coupon'] ? '<p class="meta">Offer: ' . e($c['offer']) . ($c['coupon'] ? ' · code ' . e($c['coupon']) : '') . '</p>' : '')
+        . ($form ? '<h2 class="rule">Approve or request changes</h2>' . $form : '')
+        . '</main><footer>Alchemy Studios · Imagination → Reality</footer><script src="/lab/lab.js?v=5"></script></body></html>';
+    exit;
 }

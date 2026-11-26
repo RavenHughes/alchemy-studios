@@ -83,3 +83,6 @@ input[type=color]{height:42px;padding:4px}
 .site{border:1px solid var(--hair);background:var(--panel);margin-bottom:10px;padding:10px 14px}.site summary{cursor:pointer;font:500 20px "Cormorant SC",serif;color:var(--ink)}.site summary i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:10px}
 .site form{margin-top:12px}.steps.plain li{display:block}
 .tiles div.tile{text-decoration:none}
+
+.appr p.row input{flex:1 1 260px}.appr .btn{padding:8px 14px;font-size:14px}
+.decide .plats{flex-direction:column}
