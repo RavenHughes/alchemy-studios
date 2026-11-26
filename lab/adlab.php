@@ -119,6 +119,32 @@ function adVersion(array $c): string
     return substr(hash('sha256', json_encode([$c['site'], $c['headline'], $c['body'], $c['offer'], $c['coupon'], $c['cta'], $c['link'], $c['starts'], $c['ends'], $c['platforms'], $c['tags'], $c['art'] ?? '', $c['art_w'] ?? 0, $c['art_prompt'] ?? ''])), 0, 12);
 }
 
+const ZENCHIP = 'ZenChip PRIME Corp.';
+const ADTERMS = 'Work for hire: the artwork and ad copy are made for you, and on full payment all rights in them pass to you, to the extent the law allows. Alchemy Studios may show the work in its portfolio unless you ask us not to.';
+function adRates(): array { return load('rates', []) + ['client' => 45000, 'internal' => 25000, 'due_days' => 15]; }
+function adInvoices(): array { return load('invoices', []); }
+function money(int $c): string { return '$' . number_format($c / 100, 2); }
+
+/**
+ * Bill the work once: a client's campaign is invoiced to the client when they approve it (work for hire, paid);
+ * our own site's campaign is billed to ZenChip PRIME Corp. as a service when it first runs, logged and deferred.
+ */
+function adBill(array $c, ?array $site, string $by): ?array
+{
+    if (empty($c['price']) || !$site) return null;
+    $inv = adInvoices();
+    foreach ($inv as $v) if ($v['campaign'] === $c['id'] && $v['status'] !== 'void') return null;   // billed already
+    $client = !empty($site['client']);
+    $n = count($inv) + 1;
+    $v = ['no' => 'AS-' . date('Y') . '-' . str_pad((string) $n, 4, '0', STR_PAD_LEFT), 'campaign' => $c['id'], 'site' => $site['id'], 'kind' => $client ? 'client' : 'intercompany',
+        'to' => $client ? ($site['name'] . ($site['contact'] ? ' · Attn: ' . $site['contact'] : '')) : ZENCHIP, 'email' => $client ? ($site['email'] ?? '') : '',
+        'items' => [[($c['services'] ?: 'Campaign design') . ' · “' . $c['headline'] . '”' . ($client ? '' : ' for ' . $site['name']), (int) $c['price']]],
+        'amount' => (int) $c['price'], 'issued' => date('Y-m-d'), 'due' => $client ? date('Y-m-d', strtotime('+' . adRates()['due_days'] . ' days')) : null,
+        'status' => $client ? 'invoiced' : 'deferred', 'by' => $by, 'created' => date('c')];
+    $inv[] = $v; save('invoices', $inv);
+    return $v;
+}
+
 function adClicks(): array { return load('clicks', []); }
 function adClickSum(array $clicks, string $cid): array
 {
@@ -166,6 +192,7 @@ if (preg_match('#^/review/([a-f0-9]{32})(/art|/logo)?$#', $path, $m)) {
             $all[$i]['approval'] = array_merge($all[$i]['approval'], ['state' => $dec, 'by' => $name, 'note' => $note, 'at' => $rec['at']]);
             $all[$i]['approval']['history'][] = $rec + ['version' => adVersion($c)];
             save('campaigns', $all);
+            if ($dec === 'approved') adBill($c, $site, $name);   // approving accepts the quoted fee: the invoice is made
             @mail('raven@alchemystudiosorlando.com', ($dec === 'approved' ? 'Approved: ' : 'Changes requested: ') . $c['headline'] . ' (' . ($site['name'] ?? '') . ')',
                 ($dec === 'approved' ? "$name approved the campaign \"{$c['headline']}\"." : "$name asked for changes to \"{$c['headline']}\":\n\n$note") . "\n\nhttps://alchemystudiosorlando.com/lab/adlab/c/{$c['id']}",
                 "From: Alchemy Studios <raven@alchemystudiosorlando.com>\r\nContent-Type: text/plain; charset=UTF-8");
@@ -193,7 +220,8 @@ function adPages(string $path, string $method): void
                 'body' => $s('body', 1500), 'offer' => $s('offer', 200), 'coupon' => strtoupper(preg_replace('/[^A-Za-z0-9-]/', '', $s('coupon', 30))), 'cta' => $s('cta', 40),
                 'link' => filter_var($s('link', 400), FILTER_VALIDATE_URL) ?: '', 'tags' => $s('tags', 200),
                 'starts' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $s('starts')) ? $s('starts') : '', 'ends' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $s('ends')) ? $s('ends') : '',
-                'platforms' => array_values(array_intersect(array_keys(PLATFORMS), (array) ($_POST['platforms'] ?? []))), 'updated' => date('c')]);
+                'platforms' => array_values(array_intersect(array_keys(PLATFORMS), (array) ($_POST['platforms'] ?? []))), 'updated' => date('c'),
+                'price' => (int) round(((float) preg_replace('/[^\d.]/', '', $s('price', 20))) * 100), 'services' => $s('services', 300)]);
             if ($c['headline'] === '') { flash('Give it a headline.'); go($i !== null ? "/lab/adlab/c/{$c['id']}/edit" : '/lab/adlab/new'); }
             $up = $_FILES['art'] ?? null;
             if ($up && ($up['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
@@ -232,6 +260,7 @@ function adPages(string $path, string $method): void
                 $c['approval'] = ['state' => 'pending', 'token' => $c['approval']['token'] ?? bin2hex(random_bytes(16)), 'version' => adVersion($c), 'sent' => date('c'), 'history' => $c['approval']['history'] ?? []];
                 flash('The approval link is ready. Copy it below and send it to the client.');
             }
+            if ($act === 'run' && empty(adSite($c['site'])['client'])) adBill($c, adSite($c['site']), 'J. Daniel Hughes');
             if ($act === 'run') { $c['status'] = 'running'; $c['started'] ??= date('c'); flash('Running.'); }
             if ($act === 'pause') { $c['status'] = 'paused'; flash('Paused.'); }
             if ($act === 'kill') { $c['status'] = 'dead'; $c['killed'] = date('c'); $c['kill_reason'] = trim(mb_substr((string) ($_POST['why'] ?? ''), 0, 300)); flash('Sent to the Dead Archive.'); }
@@ -263,6 +292,7 @@ function adPages(string $path, string $method): void
                     if (empty($c['renders']['facebook'][$size])) { flash('Make the Facebook artwork first: open Artwork and press “Keep for posting”.'); go("/lab/adlab/c/{$c['id']}"); }
                     $site = adSite($c['site']); $cp = adCopy($c, $site, 'facebook');
                     $r = fbCall('POST', $fb['page_id'] . '/photos', ['url' => "https://alchemystudiosorlando.com/lab/art/{$c['id']}-facebook-$size.png?v=" . strtotime($c['renders']['facebook'][$size]), 'caption' => $cp['text'], 'access_token' => $fb['token']]);
+                    if ((!empty($r['post_id']) || !empty($r['id'])) && empty($site['client'])) adBill($c, $site, 'J. Daniel Hughes');
                     if (!empty($r['post_id']) || !empty($r['id'])) { $c['posts']['facebook'] = ['id' => $r['post_id'] ?? ($fb['page_id'] . '_' . $r['id']), 'at' => date('c')]; if ($c['status'] === 'draft') { $c['status'] = 'running'; $c['started'] = date('c'); } flash('Posted to ' . ($fb['page_name'] ?? 'the Facebook Page') . '.'); }
                     else flash('Facebook said: ' . ($r['error']['message'] ?? 'no answer'));
                 } else {
@@ -291,6 +321,20 @@ function adPages(string $path, string $method): void
                 'bg' => $hex('bg', '#000000'), 'accent' => $hex('accent', '#c9a45c'), 'text' => $hex('text', '#ffffff'), 'voice' => $s('voice', 120), 'tags' => $s('tags'), 'logo' => $s('logo', 300)] + $who;
             save('sites', $sites); flash('Site saved.'); go('/lab/adlab/sites');
         }
+        if ($path === '/adlab/billing/rates') {
+            $d = fn ($k) => (int) round(((float) preg_replace('/[^\d.]/', '', (string) ($_POST[$k] ?? '0'))) * 100);
+            save('rates', ['client' => $d('client'), 'internal' => $d('internal'), 'due_days' => max(1, min(90, (int) ($_POST['due_days'] ?? 15)))]); flash('Rates saved.'); go('/lab/adlab/billing');
+        }
+        if (preg_match('#^/adlab/invoice/(AS-\d{4}-\d{4})/(paid|settle|void|reopen)$#', $path, $mm)) {
+            $inv = adInvoices();
+            foreach ($inv as &$v) if ($v['no'] === $mm[1]) {
+                if ($mm[2] === 'paid') { $v['status'] = 'paid'; $v['paid_at'] = date('Y-m-d'); $v['paid_note'] = trim(mb_substr((string) ($_POST['note'] ?? ''), 0, 120)); }
+                if ($mm[2] === 'settle') { $v['status'] = 'settled'; $v['paid_at'] = date('Y-m-d'); $v['paid_note'] = trim(mb_substr((string) ($_POST['note'] ?? ''), 0, 120)); }
+                if ($mm[2] === 'void') $v['status'] = 'void';
+                if ($mm[2] === 'reopen') { $v['status'] = $v['kind'] === 'client' ? 'invoiced' : 'deferred'; unset($v['paid_at']); }
+            }
+            unset($v); save('invoices', $inv); flash('Invoice ' . $mm[1] . ' updated.'); go('/lab/adlab/invoice/' . $mm[1]);
+        }
         if ($path === '/adlab/artist') {
             $old = load('artist', []); $s = fn ($k) => trim((string) ($_POST[$k] ?? ''));
             if (!empty($_POST['forget'])) { save('artist', []); flash('The artist is disconnected.'); go('/lab/adlab/artist'); }
@@ -313,7 +357,7 @@ function adPages(string $path, string $method): void
     $clicks = adClicks();
     $sitesById = array_column($sites, null, 'id');
     $badge = fn ($st) => '<span class="badge" style="--c:' . (CSTATUS[$st][1] ?? '#999') . '">' . e(CSTATUS[$st][0] ?? $st) . '</span>';
-    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a><a href="/lab/adlab/artist"' . ($path === '/adlab/artist' ? ' aria-current="true"' : '') . '>Artist</a></nav>';
+    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a><a href="/lab/adlab/artist"' . ($path === '/adlab/artist' ? ' aria-current="true"' : '') . '>Artist</a><a href="/lab/adlab/billing"' . (str_starts_with($path, '/adlab/billing') || str_starts_with($path, '/adlab/invoice') ? ' aria-current="true"' : '') . '>Billing</a></nav>';
     $card = function (array $c) use ($clicks, $sitesById, $badge): string {
         [$by] = adClickSum($clicks, $c['id']); $site = $sitesById[$c['site']] ?? ['name' => $c['site'], 'accent' => '#c9a45c'];
         $o = adOptics($c, $sitesById[$c['site']] ?? ['url' => '', 'name' => '', 'tags' => '']);
@@ -349,6 +393,48 @@ function adPages(string $path, string $method): void
         page('Sites', '<section class="hero"><h1>Sites</h1><p>Each site’s brand kit: its colours, tagline, hashtags and logo. Every campaign takes its look from here.</p></section>' . $nav . $rows, $crumb);
     }
 
+    if ($path === '/adlab/billing') {
+        $inv = adInvoices(); $r = adRates(); $y = date('Y');
+        $owed = 0; $paidY = 0; $deferred = 0;
+        foreach ($inv as $v) { if ($v['status'] === 'invoiced') $owed += $v['amount']; if ($v['status'] === 'paid' && substr($v['paid_at'] ?? '', 0, 4) === $y) $paidY += $v['amount']; if ($v['status'] === 'deferred') $deferred += $v['amount']; }
+        $st = ['invoiced' => ['Owed', '#d8b45a'], 'paid' => ['Paid', '#4ee0a0'], 'deferred' => ['Deferred', '#7fd3ff'], 'settled' => ['Settled', '#4ee0a0'], 'void' => ['Void', '#7b8a92']];
+        $rows = ''; foreach (array_reverse($inv) as $v) $rows .= '<tr><td><a href="/lab/adlab/invoice/' . e($v['no']) . '">' . e($v['no']) . '</a></td><td>' . e(date('M j, Y', strtotime($v['issued']))) . '</td><td>' . e($v['to']) . '</td><td>' . e($v['kind'] === 'client' ? 'Work for hire' : 'Service to ZenChip (deferred)') . '</td><td class="n">' . money($v['amount']) . '</td><td><span class="badge" style="--c:' . $st[$v['status']][1] . '">' . e($st[$v['status']][0]) . '</span></td></tr>';
+        page('Billing', '<section class="hero"><h1>Billing</h1><p>Design for clients is work for hire, invoiced when the client approves. Design for our own sites is a service billed to ZenChip PRIME Corp. when it first runs, logged and deferred.</p></section>' . $nav
+            . '<div class="tiles"><div class="tile" style="--c:#d8b45a"><b>' . money($owed) . '</b><span>Clients owe</span></div><div class="tile" style="--c:#4ee0a0"><b>' . money($paidY) . '</b><span>Paid in ' . $y . '</span></div><div class="tile" style="--c:#7fd3ff"><b>' . money($deferred) . '</b><span>Deferred · owed by ZenChip</span></div></div>'
+            . '<table class="ptable"><thead><tr><th>Invoice</th><th>Date</th><th>Billed to</th><th>Kind</th><th>Amount</th><th></th></tr></thead><tbody>' . ($rows ?: '<tr><td colspan="6" class="empty">No invoices yet. They appear when a client approves, or when one of our own campaigns first runs.</td></tr>') . '</tbody></table>'
+            . '<p class="row"><a class="btn ghost" href="/lab/adlab/billing.csv">Download all (CSV)</a><a class="btn ghost" href="/lab/adlab/billing-zenchip.csv">ZenChip’s deferred services, for its Finances ledger (CSV)</a></p>'
+            . '<h2 class="rule">Standard fees</h2><form method="post" action="/lab/adlab/billing/rates" class="row">' . csrf() . '<label>Client campaign (work for hire)<input name="client" inputmode="decimal" value="' . number_format($r['client'] / 100, 2, '.', '') . '"></label><label>Our own site (to ZenChip)<input name="internal" inputmode="decimal" value="' . number_format($r['internal'] / 100, 2, '.', '') . '"></label><label>Days to pay<input type="number" name="due_days" min="1" max="90" value="' . (int) $r['due_days'] . '"></label><button>Save</button></form>'
+            . '<p class="meta">New campaigns start with these fees; each campaign’s fee can be changed before it is billed.</p>', $crumb);
+    }
+    if ($path === '/adlab/billing.csv' || $path === '/adlab/billing-zenchip.csv') {
+        $zen = $path === '/adlab/billing-zenchip.csv';
+        header('Content-Type: text/csv; charset=utf-8'); header('Content-Disposition: attachment; filename="' . ($zen ? 'zenchip-deferred-services' : 'alchemy-invoices') . '-' . date('Y-m-d') . '.csv"');
+        $o = fopen('php://output', 'w');
+        if ($zen) {   // the shareholder portal's Finances import: a liability ZenChip owes Alchemy, kept open until settled
+            fputcsv($o, ['Date', 'Ends', 'Type', 'Monthly', 'Category', 'Party', 'Description', 'Amount', 'Settled', 'Ref']);
+            foreach (adInvoices() as $v) if ($v['kind'] === 'intercompany' && in_array($v['status'], ['deferred', 'settled'], true))
+                fputcsv($o, [$v['issued'], '', 'Liability', '', 'Accounts payable', 'Alchemy Studios, LLC', 'Deferred design service ' . $v['no'] . ': ' . $v['items'][0][0], number_format($v['amount'] / 100, 2, '.', ''), $v['status'] === 'settled' ? number_format($v['amount'] / 100, 2, '.', '') : '0.00', 'alchemy-' . $v['no']]);
+        } else {
+            fputcsv($o, ['Invoice', 'Issued', 'Due', 'Billed to', 'Kind', 'Description', 'Amount', 'Status', 'Paid or settled']);
+            foreach (adInvoices() as $v) fputcsv($o, [$v['no'], $v['issued'], $v['due'] ?? '', $v['to'], $v['kind'] === 'client' ? 'Work for hire' : 'Intercompany service (deferred)', $v['items'][0][0], number_format($v['amount'] / 100, 2, '.', ''), $v['status'], $v['paid_at'] ?? '']);
+        }
+        exit;
+    }
+    if (preg_match('#^/adlab/invoice/(AS-\d{4}-\d{4})$#', $path, $mm)) {
+        $v = null; foreach (adInvoices() as $x) if ($x['no'] === $mm[1]) $v = $x;
+        if (!$v) { http_response_code(404); page('Not found', '<p>No such invoice.</p>', $crumb); }
+        $client = $v['kind'] === 'client';
+        $lines = ''; foreach ($v['items'] as [$d, $a]) $lines .= '<tr><td>' . e($d) . '</td><td class="n">' . money((int) $a) . '</td></tr>';
+        $btn = fn ($a, $l, $note = false) => '<form method="post" action="/lab/adlab/invoice/' . e($v['no']) . '/' . $a . '" class="row">' . csrf() . ($note ? '<input name="note" placeholder="How it was paid (optional)">' : '') . '<button class="ghost">' . $l . '</button></form>';
+        page('Invoice ' . $v['no'], '<article class="invoice"><header><div><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="56" height="56"><b>Alchemy Studios, LLC</b><small>Development House · alchemystudiosorlando.com</small></div><div class="inv-no"><b>' . ($client ? 'Invoice' : 'Service invoice (deferred)') . '</b><span>' . e($v['no']) . '</span><small>Issued ' . e(date('F j, Y', strtotime($v['issued']))) . ($v['due'] ? '<br>Due ' . e(date('F j, Y', strtotime($v['due']))) : '') . '</small></div></header>'
+            . '<p><span class="meta">Billed to</span><br><b>' . e($v['to']) . '</b>' . ($v['email'] ? '<br>' . e($v['email']) : '') . '</p>'
+            . '<table class="ptable"><thead><tr><th>Service</th><th>Amount</th></tr></thead><tbody>' . $lines . '<tr><th>Total</th><th class="n">' . money($v['amount']) . '</th></tr></tbody></table>'
+            . '<p class="meta">' . ($client ? e(ADTERMS) : 'Design service provided by Alchemy Studios, LLC, a wholly owned subsidiary, to ZenChip PRIME Corp. Recorded as an intercompany service and deferred: payable when settled between the companies.') . '</p>'
+            . '<p class="meta">Status: <b>' . e(ucfirst($v['status'])) . '</b>' . (!empty($v['paid_at']) ? ' on ' . e(date('F j, Y', strtotime($v['paid_at']))) . (!empty($v['paid_note']) ? ' · ' . e($v['paid_note']) : '') : '') . '</p></article>'
+            . '<div class="row noprint"><button type="button" class="ghost" onclick="print()">Print or save as PDF</button>'
+            . ($v['status'] === 'invoiced' ? $btn('paid', 'Mark paid', true) : '') . ($v['status'] === 'deferred' ? $btn('settle', 'Mark settled by ZenChip', true) : '')
+            . (in_array($v['status'], ['paid', 'settled', 'void'], true) ? $btn('reopen', 'Reopen') : $btn('void', 'Void')) . '</div>', $crumb);
+    }
     if ($path === '/adlab/artist') {
         $ar = load('artist', []);
         page('Artist', '<section class="hero"><h1>The Artist</h1><p>Pictures made from a description, through your own Microsoft Foundry account (Azure). MAI-Image-2 is Microsoft’s own model, the one behind Copilot’s pictures; gpt-image-2 can stand by in case it’s busy.</p></section>' . $nav
@@ -383,6 +469,8 @@ function adPages(string $path, string $method): void
             . '<label>Where it sends people <small>a page on the site</small><input name="link" type="url" value="' . e($c['link']) . '"></label>'
             . '<div class="row"><label>Starts<input type="date" name="starts" value="' . e($c['starts']) . '"></label><label>Ends<input type="date" name="ends" value="' . e($c['ends']) . '"></label><label>Hashtags <small>blank: the site’s own</small><input name="tags" value="' . e($c['tags']) . '"></label></div>'
             . '<fieldset class="plats"><legend>Platforms</legend>' . $pl . '</fieldset>'
+            . '<div class="row"><label>Design fee <small>' . (!empty(adSite($c['site'])['client']) ? 'a client: work for hire, invoiced to them' : 'our own site: billed to ZenChip PRIME Corp., logged and deferred') . '</small><input name="price" inputmode="decimal" value="' . e(isset($c['price']) ? number_format($c['price'] / 100, 2, '.', '') : number_format(adRates()[!empty(adSite($c['site'])['client']) ? 'client' : 'internal'] / 100, 2, '.', '')) . '"></label>'
+            . '<label>Services <small>shown on the invoice</small><input name="services" value="' . e($c['services'] ?? 'Campaign design: artwork in every platform size, ad copy, tracked links') . '"></label></div>'
             . '<label>Artwork <small>JPEG, PNG or WebP, large; it is cropped to each size, never stretched</small><input type="file" name="art" accept="image/jpeg,image/png,image/webp"></label>' . (!empty($c['art']) ? '<p class="meta">Current artwork kept unless you choose a new one.</p>' : '')
             . '<div class="row"><button>Save</button><a class="ghost" href="/lab/adlab' . ($c['id'] ? '/c/' . $c['id'] : '') . '">Cancel</a></div></form>', $crumb);
     }
@@ -419,6 +507,7 @@ function adPages(string $path, string $method): void
         page($c['headline'], '<article class="proj" style="--c:' . e($site['accent']) . '"><header>' . ring($o['score'], $col) . '<div><h1>' . e($c['headline']) . '</h1><p>' . $badge($c['status']) . ' <span class="home">' . e($site['name']) . '</span> <span class="home">' . e(KINDS[$c['kind']] ?? '') . '</span>' . ($c['event'] ? ' <span class="home">' . e($c['event']) . '</span>' : '') . ($c['starts'] || $c['ends'] ? ' <span class="home">' . e($c['starts'] ? date('M j', strtotime($c['starts'])) : '…') . ' – ' . e($c['ends'] ? date('M j, Y', strtotime($c['ends'])) : 'open') . '</span>' : '') . '</p></div></header>'
             . $acts . ($c['status'] === 'dead' ? '<aside class="law"><b>In the Dead Archive</b><p>Killed ' . e(date('M j, Y', strtotime($c['killed'] ?? 'now'))) . '.' . (!empty($c['kill_reason']) ? ' ' . e($c['kill_reason']) : '') . '</p></aside>' : '')
             . (!empty($site['client']) ? adApprovalBox($c, $site) : '')
+            . adBillLine($c, $site)
             . '<h2 class="rule">Optics · ' . $o['score'] . ' of 100</h2><ul class="optics">' . $checks . '</ul>'
             . '<h2 class="rule">How it’s doing</h2><div class="stats"><svg viewBox="0 0 310 84" class="spark" role="img" aria-label="Tracked clicks, last 14 days">' . $bars . '</svg><div><b>' . array_sum($by) . '</b> tracked clicks<br><small class="home">last 14 days shown</small></div></div>'
             . '<table class="ptable"><thead><tr><th>Platform</th><th>Clicks</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th></th></tr></thead><tbody>' . $platRows . '</tbody></table>' . $fbBox
@@ -536,7 +625,16 @@ function adReviewPage(array $c, ?array $site, string $token, bool $current): nev
         . $decided . '<h2 class="rule">The artwork, every size</h2><div id="composer" data-kit="' . e(json_encode($kit)) . '"></div>'
         . '<h2 class="rule">The words, per platform</h2><div class="copies">' . $copies . '</div>'
         . ($c['offer'] || $c['coupon'] ? '<p class="meta">Offer: ' . e($c['offer']) . ($c['coupon'] ? ' · code ' . e($c['coupon']) : '') . '</p>' : '')
+        . (!empty($c['price']) ? '<h2 class="rule">The fee</h2><aside class="law"><b>' . money((int) $c['price']) . '</b><p>' . e($c['services'] ?: 'Campaign design') . '</p><p class="meta">' . e(ADTERMS) . ' Payment due within ' . adRates()['due_days'] . ' days of approval; approving accepts this fee.</p></aside>' : '')
         . ($form ? '<h2 class="rule">Approve or request changes</h2>' . $form : '')
         . '</main><footer>Alchemy Studios · Imagination → Reality</footer><script src="/lab/lab.js?v=5"></script></body></html>';
     exit;
+}
+
+function adBillLine(array $c, array $site): string
+{
+    foreach (adInvoices() as $v) if ($v['campaign'] === $c['id'] && $v['status'] !== 'void')
+        return '<p class="meta">Billed: <a href="/lab/adlab/invoice/' . e($v['no']) . '">' . e($v['no']) . '</a> · ' . money($v['amount']) . ' to ' . e($v['to']) . ' · ' . e($v['status']) . '</p>';
+    if (empty($c['price'])) return '<p class="meta">No design fee set.</p>';
+    return '<p class="meta">Design fee ' . money((int) $c['price']) . ': ' . (!empty($site['client']) ? 'invoiced to ' . e($site['name']) . ' when they approve (work for hire).' : 'billed to ' . ZENCHIP . ' when it first runs, logged and deferred.') . '</p>';
 }
