@@ -95,7 +95,7 @@ function adOptics(array $c, array $site): array
         ['It asks them to do something (a call to act)', 10, $c['cta'] !== ''],
         ['The link goes to ' . $site['name'] . '’s own site', 15, $c['link'] !== '' && $host && str_contains((string) parse_url($c['link'], PHP_URL_HOST), preg_replace('/^www\./', '', $host))],
         ['Artwork is in place', 15, !empty($c['art'])],
-        ['The artwork is large enough for every size (' . $minW . ' px wide or more)', 10, !empty($c['art']) && ($c['art_w'] ?? 0) >= min($minW, 1080)],
+        ['The artwork is large enough (1024 px or more on its long side)', 10, !empty($c['art']) && max($c['art_w'] ?? 0, $c['art_h'] ?? 0) >= 1024],
         [$c['kind'] === 'coupon' ? 'A coupon has its code' : 'The offer is stated', 10, $c['kind'] === 'coupon' ? $c['coupon'] !== '' : ($c['offer'] !== '' || $c['coupon'] !== '')],
         ['It has an end date, after its start', 10, $c['ends'] !== '' && (!$c['starts'] || $c['ends'] >= $c['starts'])],
         ['The words fit every platform' . ($long ? ' (too long for ' . implode(', ', $long) . ')' : ''), 10, $copyOk && $c['platforms']],
@@ -166,9 +166,24 @@ function adPages(string $path, string $method): void
             if ($i !== null) $all[$i] = $c; else $all[] = $c;
             save('campaigns', $all); flash('Saved.'); go("/lab/adlab/c/{$c['id']}");
         }
-        if (preg_match('#^/adlab/c/([a-f0-9]{8})/(run|pause|kill|revive|clone|metrics|render|fb-post|fb-stats)$#', $path, $m)) {
+        if (preg_match('#^/adlab/c/([a-f0-9]{8})/(run|pause|kill|revive|clone|metrics|render|fb-post|fb-stats|generate)$#', $path, $m)) {
             $i = adFind($all, $m[1]); if ($i === null) { http_response_code(404); exit; }
             $c = &$all[$i]; $act = $m[2];
+            if ($act === 'generate') {
+                $desc = trim(mb_substr((string) ($_POST['desc'] ?? ''), 0, 1500)); $shape = in_array($_POST['shape'] ?? '', ['square', 'wide', 'tall'], true) ? $_POST['shape'] : 'square';
+                if ($desc === '') { flash('Describe the picture first.'); go("/lab/adlab/c/{$c['id']}"); }
+                $site = adSite($c['site']);
+                try {
+                    [$bytes, $model] = artistMake(artistPrompt($desc, $site, $c), $shape);
+                    $info = @getimagesizefromstring($bytes);
+                    if (!$info) throw new RuntimeException('The picture came back unreadable');
+                    $ext = $info[2] === IMAGETYPE_JPEG ? 'jpg' : ($info[2] === IMAGETYPE_WEBP ? 'webp' : 'png');
+                    foreach (glob(artDir('art') . "/{$c['id']}.*") ?: [] as $old) @rename($old, artDir('art-history') . '/' . basename($old, '.' . pathinfo($old, PATHINFO_EXTENSION)) . '-' . date('YmdHis') . '.' . pathinfo($old, PATHINFO_EXTENSION));
+                    file_put_contents(artDir('art') . "/{$c['id']}.$ext", $bytes);
+                    $c['art'] = "{$c['id']}.$ext"; $c['art_w'] = $info[0]; $c['art_h'] = $info[1]; $c['art_prompt'] = $desc; $c['art_model'] = $model; $c['generated'] = ($c['generated'] ?? 0) + 1;
+                    flash('New artwork made with ' . $model . '. The sizes below are drawn from it.');
+                } catch (Throwable $e) { flash('The artist couldn’t make it: ' . $e->getMessage()); }
+            }
             if ($act === 'run') { $c['status'] = 'running'; $c['started'] ??= date('c'); flash('Running.'); }
             if ($act === 'pause') { $c['status'] = 'paused'; flash('Paused.'); }
             if ($act === 'kill') { $c['status'] = 'dead'; $c['killed'] = date('c'); $c['kill_reason'] = trim(mb_substr((string) ($_POST['why'] ?? ''), 0, 300)); flash('Sent to the Dead Archive.'); }
@@ -227,6 +242,13 @@ function adPages(string $path, string $method): void
                 'bg' => $hex('bg', '#000000'), 'accent' => $hex('accent', '#c9a45c'), 'text' => $hex('text', '#ffffff'), 'voice' => $s('voice', 120), 'tags' => $s('tags'), 'logo' => $s('logo', 300)];
             save('sites', $sites); flash('Site saved.'); go('/lab/adlab/sites');
         }
+        if ($path === '/adlab/artist') {
+            $old = load('artist', []); $s = fn ($k) => trim((string) ($_POST[$k] ?? ''));
+            if (!empty($_POST['forget'])) { save('artist', []); flash('The artist is disconnected.'); go('/lab/adlab/artist'); }
+            $ep = rtrim($s('endpoint'), '/'); if (!preg_match('#^https://[a-z0-9.-]+\.(azure\.com|microsoft\.com|openai\.com)(/.*)?$#i', $ep)) { flash('That endpoint doesn’t look like an Azure Foundry address (https://…services.ai.azure.com).'); go('/lab/adlab/artist'); }
+            save('artist', ['endpoint' => preg_replace('#/(openai|mai)/v1.*$|/api/projects/.*$#', '', $ep), 'key' => $s('key') !== '' ? $s('key') : ($old['key'] ?? ''), 'main' => $s('main') ?: 'MAI-Image-2', 'backup' => $s('backup'), 'saved' => date('c')]);
+            flash('Saved. Make a picture on any campaign to try it.'); go('/lab/adlab/artist');
+        }
         if ($path === '/adlab/facebook') {
             $page = preg_replace('/\D/', '', (string) ($_POST['page_id'] ?? '')); $tok = trim((string) ($_POST['token'] ?? ''));
             if (!empty($_POST['forget'])) { save('facebook', []); flash('Facebook disconnected.'); go('/lab/adlab/facebook'); }
@@ -242,7 +264,7 @@ function adPages(string $path, string $method): void
     $clicks = adClicks();
     $sitesById = array_column($sites, null, 'id');
     $badge = fn ($st) => '<span class="badge" style="--c:' . (CSTATUS[$st][1] ?? '#999') . '">' . e(CSTATUS[$st][0] ?? $st) . '</span>';
-    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a></nav>';
+    $nav = '<nav class="chips"><a href="/lab/adlab"' . ($path === '/adlab' ? ' aria-current="true"' : '') . '>Campaigns</a><a href="/lab/adlab/dead"' . ($path === '/adlab/dead' ? ' aria-current="true"' : '') . '>Dead Archive</a><a href="/lab/adlab/sites"' . ($path === '/adlab/sites' ? ' aria-current="true"' : '') . '>Sites</a><a href="/lab/adlab/facebook"' . ($path === '/adlab/facebook' ? ' aria-current="true"' : '') . '>Facebook</a><a href="/lab/adlab/artist"' . ($path === '/adlab/artist' ? ' aria-current="true"' : '') . '>Artist</a></nav>';
     $card = function (array $c) use ($clicks, $sitesById, $badge): string {
         [$by] = adClickSum($clicks, $c['id']); $site = $sitesById[$c['site']] ?? ['name' => $c['site'], 'accent' => '#c9a45c'];
         $o = adOptics($c, $sitesById[$c['site']] ?? ['url' => '', 'name' => '', 'tags' => '']);
@@ -276,6 +298,16 @@ function adPages(string $path, string $method): void
         page('Sites', '<section class="hero"><h1>Sites</h1><p>Each site’s brand kit: its colours, tagline, hashtags and logo. Every campaign takes its look from here.</p></section>' . $nav . $rows, $crumb);
     }
 
+    if ($path === '/adlab/artist') {
+        $ar = load('artist', []);
+        page('Artist', '<section class="hero"><h1>The Artist</h1><p>Pictures made from a description, through your own Microsoft Foundry account (Azure). MAI-Image-2 is Microsoft’s own model, the one behind Copilot’s pictures; gpt-image-2 can stand by in case it’s busy.</p></section>' . $nav
+            . ($ar ? '<aside class="law"><b>Connected</b><p>' . e((string) parse_url($ar['endpoint'], PHP_URL_HOST)) . ' · ' . e($ar['main']) . ($ar['backup'] ? ' (backup ' . e($ar['backup']) . ')' : '') . '</p></aside>' : '')
+            . '<form method="post" action="/lab/adlab/artist" class="stack wide">' . csrf()
+            . '<label>Endpoint <small>Foundry › your resource › Endpoint, e.g. https://name.services.ai.azure.com</small><input name="endpoint" required value="' . e($ar['endpoint'] ?? '') . '"></label>'
+            . '<label>Key <small>paste it yourself; kept on the server, never shown again</small><input name="key" type="password" autocomplete="off" placeholder="' . ($ar ? 'kept · leave blank to keep it' : '') . '"></label>'
+            . '<div class="row"><label>Main model (deployment name)<input name="main" value="' . e($ar['main'] ?? 'MAI-Image-2') . '"></label><label>Backup (deployment name) <small>optional</small><input name="backup" value="' . e($ar['backup'] ?? 'gpt-image-2') . '"></label></div>'
+            . '<div class="row"><button>Save</button>' . ($ar ? '<button class="ghost" name="forget" value="1">Disconnect</button>' : '') . '</div></form>', $crumb);
+    }
     if ($path === '/adlab/facebook') {
         $fb = load('facebook', []);
         page('Facebook', '<section class="hero"><h1>Facebook</h1><p>Connect a Facebook Page so the Ad Lab can post to it and bring back its likes, comments, shares and views.</p></section>' . $nav
@@ -341,7 +373,13 @@ function adPages(string $path, string $method): void
             . '<h2 class="rule">Optics · ' . $o['score'] . ' of 100</h2><ul class="optics">' . $checks . '</ul>'
             . '<h2 class="rule">How it’s doing</h2><div class="stats"><svg viewBox="0 0 310 84" class="spark" role="img" aria-label="Tracked clicks, last 14 days">' . $bars . '</svg><div><b>' . array_sum($by) . '</b> tracked clicks<br><small class="home">last 14 days shown</small></div></div>'
             . '<table class="ptable"><thead><tr><th>Platform</th><th>Clicks</th><th>Views</th><th>Likes</th><th>Comments</th><th>Shares</th><th></th></tr></thead><tbody>' . $platRows . '</tbody></table>' . $fbBox
-            . '<h2 class="rule">Artwork</h2><p class="meta">' . (!empty($c['art']) ? 'Each size is cropped from the artwork, never stretched. Download what you need, or keep it on the server for posting.' : 'Add artwork (Edit) to make the sized images.') . '</p><div id="composer" data-kit="' . e(json_encode($kit)) . '"></div>'
+            . '<h2 class="rule">Artwork</h2>'
+            . (load('artist', []) ? '<form method="post" action="/lab/adlab/c/' . $c['id'] . '/generate" class="stack wide gen" data-busy="Making the picture… this takes about half a minute.">' . csrf()
+                . '<label>Make the artwork from a description <small>keywords are fine; the site’s colours and look are added for you, and the picture is kept free of words so the headline sits clean</small><textarea name="desc" rows="2" placeholder="e.g. grandmother and granddaughter looking at an old family album by a Christmas tree, warm candlelight">' . e($c['art_prompt'] ?? '') . '</textarea></label>'
+                . '<div class="row"><label>Shape<select name="shape"><option value="square">Square (crops to every size)</option><option value="tall">Tall (stories, pins)</option><option value="wide">Wide (X, links, LinkedIn)</option></select></label><button>' . (!empty($c['art']) ? 'Make a new picture' : 'Make the picture') . '</button></div></form>'
+                : '<p class="meta"><a href="/lab/adlab/artist">Connect the Artist</a> to make artwork from a description.</p>')
+            . (!empty($c['art_model']) ? '<p class="meta">Made with ' . e($c['art_model']) . '. Earlier pictures are kept in lab-data/art-history.</p>' : '')
+            . '<p class="meta">' . (!empty($c['art']) ? 'Each size is cropped from the artwork, never stretched. Download what you need, or keep it on the server for posting.' : 'Add artwork (Edit) to make the sized images.') . '</p><div id="composer" data-kit="' . e(json_encode($kit)) . '"></div>'
             . '<h2 class="rule">The words, per platform</h2><div class="copies">' . $copies . '</div></article>', $crumb);
     }
 
@@ -368,4 +406,36 @@ function fbCall(string $method, string $path, array $params): array
     else $ctx = stream_context_create(['http' => ['method' => 'POST', 'timeout' => 40, 'ignore_errors' => true, 'header' => "Content-Type: application/x-www-form-urlencoded\r\n", 'content' => http_build_query($params)]]);
     $body = @file_get_contents($url, false, $ctx);
     return $body === false ? ['error' => ['message' => 'Facebook could not be reached']] : (json_decode($body, true) ?: ['error' => ['message' => 'Unexpected answer']]);
+}
+
+/** The words sent to the artist: the member's description, dressed in the site's look, with room for the headline. */
+function artistPrompt(string $desc, ?array $site, array $c): string
+{
+    $look = $site ? "Colour palette led by {$site['bg']} and {$site['accent']}, in keeping with {$site['name']} (\"{$site['voice']}\")." : '';
+    return trim($desc) . '. ' . $look . ' A polished advertising photograph or illustration, rich and professional. The main subject sits in the centre and upper half with calm space around it, '
+        . 'so the picture can be cropped to wide, square and tall formats, and the lower third stays quiet for a headline. No words, letters, numbers, logos or watermarks anywhere in the picture.';
+}
+
+/** Make one picture: the main model first, the backup if the main one fails. Returns [bytes, model name]. */
+function artistMake(string $prompt, string $shape): array
+{
+    $ar = load('artist', []);
+    if (empty($ar['endpoint']) || empty($ar['key'])) throw new RuntimeException('the Artist isn’t connected');
+    @set_time_limit(170);
+    $errors = [];
+    foreach (array_filter([$ar['main'] ?? '', $ar['backup'] ?? '']) as $model) {
+        $mai = stripos($model, 'mai') !== false;
+        [$w, $h] = ['square' => [1024, 1024], 'tall' => [832, 1248], 'wide' => [1248, 832]][$shape];
+        $body = $mai ? ['model' => $model, 'prompt' => $prompt, 'width' => $w, 'height' => $h]
+                     : ['model' => $model, 'prompt' => $prompt, 'size' => ['square' => '1024x1024', 'tall' => '1024x1536', 'wide' => '1536x1024'][$shape], 'quality' => 'medium', 'output_format' => 'png', 'n' => 1];
+        $ch = curl_init($ar['endpoint'] . ($mai ? '/mai/v1/images/generations' : '/openai/v1/images/generations'));
+        curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'api-key: ' . $ar['key']], CURLOPT_POSTFIELDS => json_encode($body),
+            CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 75, CURLOPT_CONNECTTIMEOUT => 10]);
+        $raw = curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
+        $j = is_string($raw) ? json_decode($raw, true) : null;
+        $b64 = $j['data'][0]['b64_json'] ?? null;
+        if ($code < 300 && $b64) return [base64_decode($b64), $model];
+        $errors[] = $model . ': ' . ($raw === false ? $err : (string) ($j['error']['message'] ?? $j['message'] ?? ('HTTP ' . $code)));
+    }
+    throw new RuntimeException(implode(' · ', $errors));
 }

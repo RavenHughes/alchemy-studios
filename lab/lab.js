@@ -72,3 +72,10 @@ document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-copy]'); if (!b) return;
   navigator.clipboard.writeText(b.dataset.copy).then(() => { const t = b.textContent; b.textContent = 'Copied ✓'; setTimeout(() => (b.textContent = t), 1500); });
 });
+
+// making a picture takes a while: say so, and stop a second press
+document.addEventListener('submit', (e) => {
+  const f = e.target; if (!f.matches('form.gen')) return;
+  const b = f.querySelector('button'); if (b.disabled) { e.preventDefault(); return; }
+  b.disabled = true; b.textContent = f.dataset.busy || 'Working…';
+});

@@ -71,7 +71,7 @@ function page(string $title, string $body, string $crumb = ''): never {
         . '<header class="top"><a class="mark" href="/lab/"><img src="/assets/brand/alchemy-emblem-2027-sm.webp" alt="" width="44" height="44"><span><b>Creation Lab</b><small>Alchemy Studios · Development House</small></span></a>'
         . (!empty($_SESSION['architect']) ? '<nav>' . $crumb . '<form method="post" action="/lab/signout">' . csrf() . '<button class="ghost">Sign out</button></form></nav>' : '') . '</header>'
         . ($f ? '<p class="flash" role="status">' . e($f) . '</p>' : '')
-        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=3"></script></body></html>';
+        . '<main>' . $body . '</main><footer>Imagination → Reality · Private to the Architect</footer><script src="/lab/lab.js?v=4"></script></body></html>';
     exit;
 }
 
