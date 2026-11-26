@@ -36,7 +36,7 @@ document.addEventListener('submit', async (ev) => {
     const pad = 6 * u, maxW = W - pad * 2; let y = H - pad;
     g.textBaseline = 'alphabetic';
     // bottom up: the site, the call to act, the coupon, the offer, then the headline above them
-    g.font = `400 ${3.2 * u}px "Barlow Condensed", sans-serif`; g.fillStyle = hexA(k.text, 0.75); g.fillText((k.url || k.site).toUpperCase(), pad, y); y -= 5 * u;
+    g.font = `400 ${3.2 * u}px "Barlow Condensed", sans-serif`; g.fillStyle = hexA(k.text, 0.75); g.fillText((k.url || k.site).toUpperCase(), pad, y); y -= 7.5 * u;
     if (k.cta) { g.font = `500 ${4 * u}px "Barlow Condensed", sans-serif`; const t = k.cta.toUpperCase() + ' →'; const tw = g.measureText(t).width; g.fillStyle = k.accent; g.fillRect(pad, y - 5.6 * u, tw + 4 * u, 8 * u); g.fillStyle = k.bg; g.fillText(t, pad + 2 * u, y); y -= 11 * u; }
     if (k.coupon) { g.font = `500 ${4 * u}px "Barlow Condensed", sans-serif`; g.fillStyle = k.accent; g.fillText('CODE ' + k.coupon, pad, y); y -= 6.5 * u; }
     if (k.offer) { g.font = `400 ${4.6 * u}px "Cormorant Garamond", serif`; g.fillStyle = k.text; const ls = wrap(g, k.offer, maxW); for (const l of ls.slice(0, 2).reverse()) { g.fillText(l, pad, y); y -= 5.6 * u; } y -= 1.5 * u; }
